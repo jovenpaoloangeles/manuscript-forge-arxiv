@@ -26,7 +26,8 @@ export default {
 				foreground: 'hsl(var(--foreground))',
 				primary: {
 					DEFAULT: 'hsl(var(--primary))',
-					foreground: 'hsl(var(--primary-foreground))'
+					foreground: 'hsl(var(--primary-foreground))',
+					glow: 'hsl(var(--primary-glow))'
 				},
 				secondary: {
 					DEFAULT: 'hsl(var(--secondary))',
@@ -51,6 +52,16 @@ export default {
 				card: {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
+				},
+				academic: {
+					blue: 'hsl(var(--academic-blue))',
+					light: 'hsl(var(--academic-light))',
+					paper: 'hsl(var(--academic-paper))',
+					text: 'hsl(var(--academic-text))',
+					muted: 'hsl(var(--academic-muted))'
+				},
+				citation: {
+					highlight: 'hsl(var(--citation-highlight))'
 				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',

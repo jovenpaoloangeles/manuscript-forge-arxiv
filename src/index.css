@@ -2,39 +2,60 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
+/* Academic Paper Assistant Design System 
+All colors MUST be HSL for proper theming.
 */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 210 20% 98%;
+    --foreground: 215 25% 15%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 215 25% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 215 25% 15%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 210 100% 45%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 210 100% 60%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 210 30% 92%;
+    --secondary-foreground: 215 25% 15%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 210 20% 95%;
+    --muted-foreground: 215 15% 45%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 200 100% 45%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 75% 55%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 210 20% 88%;
+    --input: 210 20% 96%;
+    --ring: 210 100% 45%;
+
+    /* Academic-specific tokens */
+    --academic-blue: 210 100% 45%;
+    --academic-light: 210 30% 96%;
+    --academic-paper: 0 0% 100%;
+    --academic-text: 215 25% 20%;
+    --academic-muted: 215 15% 50%;
+    --citation-highlight: 45 100% 85%;
+    
+    /* Gradients */
+    --gradient-academic: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
+    --gradient-paper: linear-gradient(180deg, hsl(var(--academic-paper)), hsl(var(--academic-light)));
+    
+    /* Shadows */
+    --shadow-academic: 0 4px 20px -8px hsl(var(--primary) / 0.15);
+    --shadow-paper: 0 2px 10px -4px hsl(215 25% 15% / 0.1);
+    --shadow-floating: 0 8px 30px -12px hsl(var(--primary) / 0.25);
+    
+    /* Transitions */
+    --transition-academic: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
     --radius: 0.5rem;
 
