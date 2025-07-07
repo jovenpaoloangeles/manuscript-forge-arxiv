@@ -52,6 +52,9 @@ export const PaperEditor = () => {
           ? { ...s, generatedContent }
           : s
       ));
+      
+      // Check if we need to add References section after content generation
+      setTimeout(() => ensureReferencesSection(), 100);
     } catch (error) {
       // Error handled in hook
     }
@@ -125,6 +128,31 @@ export const PaperEditor = () => {
     setPaperTitle(session.paperTitle);
     setAuthors(session.authors);
     setSections(session.sections);
+  };
+
+  // Function to detect citation placeholders in content
+  const hasCitationPlaceholders = () => {
+    return sections.some(section => 
+      section.generatedContent && section.generatedContent.includes('[CITE:')
+    );
+  };
+
+  // Automatically add References section when citations are detected
+  const ensureReferencesSection = () => {
+    const hasReferences = sections.some(s => s.title.toLowerCase().includes('reference'));
+    const hasCitations = hasCitationPlaceholders();
+    
+    if (hasCitations && !hasReferences) {
+      const referencesSection = {
+        id: `section-references-${Date.now()}`,
+        title: "References",
+        description: "Academic references and citations",
+        bulletPoints: [],
+        figures: [],
+        generatedContent: "References will be formatted here based on citation placeholders found in the text."
+      };
+      setSections(prev => [...prev, referencesSection]);
+    }
   };
 
   const generateAllSections = async () => {
