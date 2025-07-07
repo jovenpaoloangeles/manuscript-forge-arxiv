@@ -5,10 +5,12 @@ import { PaperPreview } from "./PaperPreview";
 import { PaperMetadata } from "./PaperMetadata";
 import { GenerationControls } from "./GenerationControls";
 import { EditorCritique } from "./EditorCritique";
+import { SessionManager } from "./SessionManager";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FileText, Eye } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useOpenAI } from "@/hooks/useOpenAI";
+import { SessionData } from "@/hooks/useSessionManager";
 
 export const PaperEditor = () => {
   const [paperTitle, setPaperTitle] = useState("");
@@ -86,6 +88,13 @@ export const PaperEditor = () => {
     );
   };
 
+  const handleLoadSession = (session: SessionData) => {
+    setPaperTitle(session.paperTitle);
+    setAuthors(session.authors);
+    setAbstract(session.abstract);
+    setSections(session.sections);
+  };
+
   const generateAllSections = async () => {
     if (!openaiApiKey) {
       toast({
@@ -159,12 +168,21 @@ export const PaperEditor = () => {
           </TabsList>
 
           <TabsContent value="structure" className="space-y-6">
-            <GenerationControls
-              sections={sections}
-              isGenerating={isGenerating}
-              onGenerateAll={generateAllSections}
-              onShowGlobalCritique={() => setShowGlobalCritique(true)}
-            />
+            <div className="flex justify-between items-center">
+              <GenerationControls
+                sections={sections}
+                isGenerating={isGenerating}
+                onGenerateAll={generateAllSections}
+                onShowGlobalCritique={() => setShowGlobalCritique(true)}
+              />
+              <SessionManager
+                paperTitle={paperTitle}
+                authors={authors}
+                abstract={abstract}
+                sections={sections}
+                onLoadSession={handleLoadSession}
+              />
+            </div>
 
             <PaperStructure
               sections={sections}

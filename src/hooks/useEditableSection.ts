@@ -1,6 +1,14 @@
 import { useState, useEffect, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 
+interface ContentVersion {
+  id: string;
+  content: string;
+  timestamp: number;
+  isManualEdit: boolean;
+  description: string;
+}
+
 interface UseEditableSectionProps {
   content: string;
   generatedContent?: string;
@@ -22,8 +30,24 @@ export const useEditableSection = ({
   const [selectionEnd, setSelectionEnd] = useState(0);
   const [showRewriteDialog, setShowRewriteDialog] = useState(false);
   const [isRewriting, setIsRewriting] = useState(false);
+  const [contentVersions, setContentVersions] = useState<ContentVersion[]>([]);
+  const [showVersionHistory, setShowVersionHistory] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { toast } = useToast();
+
+  // Initialize version history with current content
+  useEffect(() => {
+    if (content && contentVersions.length === 0) {
+      const initialVersion: ContentVersion = {
+        id: `version-${Date.now()}`,
+        content,
+        timestamp: Date.now(),
+        isManualEdit: false,
+        description: "Initial content"
+      };
+      setContentVersions([initialVersion]);
+    }
+  }, [content, contentVersions.length]);
 
   useEffect(() => {
     setEditedContent(content);
@@ -33,7 +57,19 @@ export const useEditableSection = ({
     setHasUnsavedChanges(editedContent !== content);
   }, [editedContent, content]);
 
+  const saveContentVersion = (newContent: string, isManualEdit: boolean, description: string) => {
+    const version: ContentVersion = {
+      id: `version-${Date.now()}`,
+      content: newContent,
+      timestamp: Date.now(),
+      isManualEdit,
+      description
+    };
+    setContentVersions(prev => [...prev, version]);
+  };
+
   const handleSave = () => {
+    saveContentVersion(editedContent, true, "Manual edit");
     onContentChange(editedContent, true);
     setIsEditing(false);
     setHasUnsavedChanges(false);
@@ -52,6 +88,7 @@ export const useEditableSection = ({
 
   const handleRevertToGenerated = () => {
     if (generatedContent) {
+      saveContentVersion(generatedContent, false, "Reverted to generated");
       onContentChange(generatedContent, false);
       setEditedContent(generatedContent);
       setHasUnsavedChanges(false);
@@ -61,6 +98,19 @@ export const useEditableSection = ({
         description: "Section content has been restored to the AI-generated version.",
       });
     }
+  };
+
+  const handleRevertToVersion = (version: ContentVersion) => {
+    saveContentVersion(version.content, false, `Reverted to ${version.description}`);
+    onContentChange(version.content, version.isManualEdit);
+    setEditedContent(version.content);
+    setHasUnsavedChanges(false);
+    setShowVersionHistory(false);
+    
+    toast({
+      title: "Reverted to previous version",
+      description: `Content restored to: ${version.description}`,
+    });
   };
 
   const handleTextSelection = () => {
@@ -120,10 +170,14 @@ export const useEditableSection = ({
     showRewriteDialog,
     setShowRewriteDialog,
     isRewriting,
+    contentVersions,
+    showVersionHistory,
+    setShowVersionHistory,
     textareaRef,
     handleSave,
     handleCancel,
     handleRevertToGenerated,
+    handleRevertToVersion,
     handleTextSelection,
     handleRewriteSelection
   };

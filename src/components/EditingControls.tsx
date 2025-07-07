@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Edit, Eye, Save, X, RotateCcw, MessageSquare } from "lucide-react";
+import { Edit, Eye, Save, X, RotateCcw, MessageSquare, History } from "lucide-react";
 
 interface EditingControlsProps {
   isEditing: boolean;
@@ -14,6 +14,8 @@ interface EditingControlsProps {
   onPreview: () => void;
   onReview: () => void;
   onRevertToGenerated?: () => void;
+  onShowVersionHistory?: () => void;
+  hasVersionHistory?: boolean;
 }
 
 export const EditingControls = ({
@@ -27,7 +29,9 @@ export const EditingControls = ({
   onCancel,
   onPreview,
   onReview,
-  onRevertToGenerated
+  onRevertToGenerated,
+  onShowVersionHistory,
+  hasVersionHistory
 }: EditingControlsProps) => {
   return (
     <div className="flex items-center justify-between">
@@ -108,6 +112,18 @@ export const EditingControls = ({
             className="text-yellow-600 hover:text-yellow-700"
           >
             <RotateCcw className="h-4 w-4" />
+          </Button>
+        )}
+        
+        {hasVersionHistory && !isEditing && onShowVersionHistory && (
+          <Button
+            onClick={onShowVersionHistory}
+            variant="ghost"
+            size="sm"
+            className="text-academic-blue hover:bg-academic-blue/10"
+            title="View version history"
+          >
+            <History className="h-4 w-4" />
           </Button>
         )}
       </div>

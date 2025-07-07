@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { AlertTriangle, Wand2 } from "lucide-react";
+import { AlertTriangle, Wand2, History } from "lucide-react";
 import { EditingControls } from "./EditingControls";
 import { SectionPreviewDialog } from "./SectionPreviewDialog";
 import { SectionCritiqueDialog } from "./SectionCritiqueDialog";
 import { TextRewriteDialog } from "./TextRewriteDialog";
+import { VersionHistoryDialog } from "./VersionHistoryDialog";
 import { useEditableSection } from "@/hooks/useEditableSection";
 
 interface EditableSectionProps {
@@ -49,10 +50,14 @@ export const EditableSection = ({
     showRewriteDialog,
     setShowRewriteDialog,
     isRewriting,
+    contentVersions,
+    showVersionHistory,
+    setShowVersionHistory,
     textareaRef,
     handleSave,
     handleCancel,
     handleRevertToGenerated,
+    handleRevertToVersion,
     handleTextSelection,
     handleRewriteSelection
   } = useEditableSection({
@@ -92,6 +97,8 @@ export const EditableSection = ({
         onPreview={() => setShowPreview(true)}
         onReview={() => setShowCritique(true)}
         onRevertToGenerated={generatedContent ? handleRevertToGenerated : undefined}
+        onShowVersionHistory={() => setShowVersionHistory(true)}
+        hasVersionHistory={contentVersions.length > 1}
       />
 
       {isEditing ? (
@@ -177,6 +184,14 @@ export const EditableSection = ({
         selectedText={selectedText}
         onRewrite={handleRewriteSelection}
         isRewriting={isRewriting}
+      />
+
+      <VersionHistoryDialog
+        isOpen={showVersionHistory}
+        onClose={() => setShowVersionHistory(false)}
+        versions={contentVersions}
+        onRevertToVersion={handleRevertToVersion}
+        sectionTitle={sectionTitle}
       />
     </div>
   );
