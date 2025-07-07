@@ -54,7 +54,7 @@ export const useOpenAI = () => {
       prompt += ` Key points to address:\n${section.bulletPoints.map(point => `• ${point}`).join('\n')}`;
     }
     
-    prompt += `\n\nWrite 2-3 well-developed paragraphs that sound like they were written by an experienced researcher. Use varied sentence structures, natural transitions, and include citations [1], [2], etc. where appropriate. Avoid formulaic language and write with genuine scholarly voice.`;
+    prompt += `\n\nWrite 2-3 well-developed paragraphs that sound like they were written by an experienced researcher. Use varied sentence structures, natural transitions, and include citation placeholders [CITE: Short Reason for Citation] only where truly necessary (avoid citing common knowledge). Avoid formulaic language and write with genuine scholarly voice.`;
     
     return prompt;
   };
@@ -84,7 +84,7 @@ export const useOpenAI = () => {
         messages: [
           {
             role: "system",
-            content: "You are a distinguished academic researcher with years of publication experience. Write in a natural, scholarly voice that demonstrates expertise without sounding artificial or formulaic. Use varied sentence structures, smooth transitions, and confident prose. Include citations [1], [2], etc. naturally within the flow of ideas. Your writing should sound distinctly human - thoughtful, engaging, and authoritative."
+            content: "You are a distinguished academic researcher with years of publication experience. Write in a natural, scholarly voice that demonstrates expertise without sounding artificial or formulaic. Use varied sentence structures, smooth transitions, and confident prose. Include citation placeholders in the format [CITE: Short Reason for Citation] only when truly necessary - avoid citing common knowledge. Your writing should sound distinctly human - thoughtful, engaging, and authoritative."
           },
           {
             role: "user",
@@ -346,7 +346,7 @@ export const useOpenAI = () => {
         messages: [
           {
             role: "system",
-            content: "You are an expert academic editor. Rewrite the provided text to improve clarity, flow, and academic quality while maintaining the original meaning and technical accuracy."
+            content: "You are an expert academic editor. Rewrite the provided text to improve clarity, flow, and academic quality while maintaining the original meaning and technical accuracy. Use citation placeholders in the format [CITE: Short Reason for Citation] only when truly necessary - avoid citing common knowledge."
           },
           {
             role: "user",
