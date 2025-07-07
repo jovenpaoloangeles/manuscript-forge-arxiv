@@ -49,9 +49,16 @@ export const EditableSection = ({
     setShowRewriteDialog,
     showVersionHistory,
     setShowVersionHistory,
+    contentVersions,
     handleTextSelection,
-    handleRewriteSelection
-  } = useEditableSection({});
+    handleRewriteSelection,
+    handleRevertToVersion
+  } = useEditableSection({
+    content,
+    generatedContent,
+    onContentChange,
+    onRewriteSelection
+  });
 
   const handleStartEdit = () => {
     setIsEditing(true);
@@ -129,8 +136,9 @@ export const EditableSection = ({
       <VersionHistoryDialog
         isOpen={showVersionHistory}
         onClose={() => setShowVersionHistory(false)}
-        versions={[]}
-        onRestoreVersion={() => setShowVersionHistory(false)}
+        versions={contentVersions}
+        onRevertToVersion={handleRevertToVersion}
+        sectionTitle={sectionTitle}
       />
     </div>
   );
