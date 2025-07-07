@@ -12,7 +12,6 @@ import { PaperSection } from "./PaperStructure";
 interface SessionManagerProps {
   paperTitle: string;
   authors: string;
-  abstract: string;
   sections: PaperSection[];
   onLoadSession: (session: SessionData) => void;
 }
@@ -20,7 +19,6 @@ interface SessionManagerProps {
 export const SessionManager = ({
   paperTitle,
   authors,
-  abstract,
   sections,
   onLoadSession
 }: SessionManagerProps) => {
@@ -35,7 +33,9 @@ export const SessionManager = ({
 
   const handleSaveSession = () => {
     const name = sessionName.trim() || `Session ${new Date().toLocaleString()}`;
-    saveSession(paperTitle, authors, abstract, sections, name);
+    const abstractSection = sections.find(s => s.title.toLowerCase() === 'abstract');
+    const abstractContent = abstractSection?.generatedContent || '';
+    saveSession(paperTitle, authors, abstractContent, sections, name);
     setSessionName("");
     setShowSaveDialog(false);
   };

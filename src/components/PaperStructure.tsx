@@ -59,14 +59,8 @@ const defaultSections: Omit<PaperSection, 'id'>[] = [
     figures: []
   },
   {
-    title: "Results",
-    description: "Experimental results and findings",
-    bulletPoints: [],
-    figures: []
-  },
-  {
-    title: "Discussion",
-    description: "Interpretation of results and implications",
+    title: "Results and Discussion",
+    description: "Experimental results, findings, and their interpretation with implications",
     bulletPoints: [],
     figures: []
   },

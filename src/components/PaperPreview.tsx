@@ -9,13 +9,18 @@ interface PaperPreviewProps {
   sections: PaperSection[];
   paperTitle: string;
   authors: string;
-  abstract: string;
 }
 
-export const PaperPreview = ({ sections, paperTitle, authors, abstract }: PaperPreviewProps) => {
+export const PaperPreview = ({ sections, paperTitle, authors }: PaperPreviewProps) => {
   const { toast } = useToast();
 
+  const getAbstractContent = () => {
+    const abstractSection = sections.find(s => s.title.toLowerCase() === 'abstract');
+    return abstractSection?.generatedContent || '';
+  };
+
   const generateLatex = () => {
+    const abstract = getAbstractContent();
     const latexContent = `\\documentclass{article}
 \\usepackage[utf8]{inputenc}
 \\usepackage{amsmath}
@@ -174,14 +179,14 @@ ${section.generatedContent || section.description || 'Content to be generated...
               </p>
             </div>
 
-            {abstract && (
+            {getAbstractContent() && (
               <div className="mb-8">
                 <h2 className="text-lg font-bold mb-3 text-academic-text">Abstract</h2>
-                <p className="text-academic-text leading-relaxed">{abstract}</p>
+                <p className="text-academic-text leading-relaxed">{getAbstractContent()}</p>
               </div>
             )}
 
-            {sections.map((section, index) => (
+            {sections.filter(s => s.title.toLowerCase() !== 'abstract').map((section, index) => (
               <div key={section.id} className="mb-6">
                 <h2 className="text-lg font-bold mb-3 text-academic-text">
                   {index + 1}. {section.title}

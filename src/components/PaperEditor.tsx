@@ -15,7 +15,6 @@ import { SessionData } from "@/hooks/useSessionManager";
 export const PaperEditor = () => {
   const [paperTitle, setPaperTitle] = useState("");
   const [authors, setAuthors] = useState("");
-  const [abstract, setAbstract] = useState("");
   const [sections, setSections] = useState<PaperSection[]>([]);
   const [showGlobalCritique, setShowGlobalCritique] = useState(false);
   const { toast } = useToast();
@@ -26,6 +25,8 @@ export const PaperEditor = () => {
     isGenerating,
     generateSectionContent,
     generateCaption,
+    generateAbstract,
+    suggestTitles,
     rewriteText
   } = useOpenAI();
 
@@ -34,7 +35,18 @@ export const PaperEditor = () => {
     if (!section) return;
 
     try {
-      const generatedContent = await generateSectionContent(section, paperTitle, abstract);
+      let generatedContent;
+      
+      // Special handling for Abstract section
+      if (section.title.toLowerCase() === 'abstract') {
+        const fullPaperContent = getFullPaperContentForContext();
+        generatedContent = await generateAbstract(paperTitle, fullPaperContent);
+      } else {
+        const abstractSection = sections.find(s => s.title.toLowerCase() === 'abstract');
+        const abstractContent = abstractSection?.generatedContent || '';
+        generatedContent = await generateSectionContent(section, paperTitle, abstractContent);
+      }
+      
       setSections(sections.map(s => 
         s.id === sectionId 
           ? { ...s, generatedContent }
@@ -52,11 +64,14 @@ export const PaperEditor = () => {
     if (!section || !figure || !figure.description.trim()) return;
 
     try {
+      const abstractSection = sections.find(s => s.title.toLowerCase() === 'abstract');
+      const abstractContent = abstractSection?.generatedContent || '';
+      
       const generatedCaption = await generateCaption(
         figure.description,
         section.title,
         paperTitle,
-        abstract
+        abstractContent
       );
       
       setSections(sections.map(s => 
@@ -78,20 +93,37 @@ export const PaperEditor = () => {
 
   const handleRewriteSelection = async (sectionId: string, selectedText: string, prompt?: string): Promise<string> => {
     const section = sections.find(s => s.id === sectionId);
+    const abstractSection = sections.find(s => s.title.toLowerCase() === 'abstract');
+    const abstractContent = abstractSection?.generatedContent || '';
     
     return await rewriteText(
       selectedText,
       section?.title || "Unknown Section",
       paperTitle,
-      abstract,
+      abstractContent,
       prompt
     );
+  };
+
+  const handleSuggestTitles = async () => {
+    try {
+      const abstractSection = sections.find(s => s.title.toLowerCase() === 'abstract');
+      const abstractContent = abstractSection?.generatedContent || '';
+      const fullPaperContent = getFullPaperContentForContext();
+      
+      const titles = await suggestTitles(paperTitle, abstractContent, fullPaperContent);
+      
+      // Update the PaperMetadata component with suggested titles
+      // This will be handled through a state update mechanism
+      return titles;
+    } catch (error) {
+      // Error handled in hook
+    }
   };
 
   const handleLoadSession = (session: SessionData) => {
     setPaperTitle(session.paperTitle);
     setAuthors(session.authors);
-    setAbstract(session.abstract);
     setSections(session.sections);
   };
 
@@ -125,7 +157,16 @@ export const PaperEditor = () => {
       .map(s => `${s.title}\n\n${s.generatedContent}`)
       .join('\n\n');
     
-    return `Title: ${paperTitle}\n\nAuthors: ${authors}\n\nAbstract:\n${abstract}\n\n${fullContent}`;
+    return `Title: ${paperTitle}\n\nAuthors: ${authors}\n\n${fullContent}`;
+  };
+
+  const getFullPaperContentForContext = () => {
+    const sectionsWithContent = sections
+      .filter(s => s.generatedContent && s.title.toLowerCase() !== 'abstract')
+      .map(s => `${s.title}\n\n${s.generatedContent}`)
+      .join('\n\n');
+    
+    return sectionsWithContent || "No content available yet.";
   };
 
   return (
@@ -148,10 +189,10 @@ export const PaperEditor = () => {
           setPaperTitle={setPaperTitle}
           authors={authors}
           setAuthors={setAuthors}
-          abstract={abstract}
-          setAbstract={setAbstract}
           openaiApiKey={openaiApiKey}
           setOpenaiApiKey={setOpenaiApiKey}
+          onSuggestTitles={handleSuggestTitles}
+          isGenerating={isGenerating}
         />
 
         {/* Main Content */}
@@ -178,7 +219,6 @@ export const PaperEditor = () => {
               <SessionManager
                 paperTitle={paperTitle}
                 authors={authors}
-                abstract={abstract}
                 sections={sections}
                 onLoadSession={handleLoadSession}
               />
@@ -191,7 +231,6 @@ export const PaperEditor = () => {
               onGenerateCaption={handleGenerateCaption}
               onRewriteSelection={handleRewriteSelection}
               paperTitle={paperTitle}
-              abstract={abstract}
             />
           </TabsContent>
 
@@ -200,7 +239,6 @@ export const PaperEditor = () => {
               sections={sections}
               paperTitle={paperTitle}
               authors={authors}
-              abstract={abstract}
             />
           </TabsContent>
         </Tabs>
@@ -214,7 +252,6 @@ export const PaperEditor = () => {
             <EditorCritique
               content={getFullPaperContent()}
               paperTitle={paperTitle}
-              abstract={abstract}
             />
           </DialogContent>
         </Dialog>

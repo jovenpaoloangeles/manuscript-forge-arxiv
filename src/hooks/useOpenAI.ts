@@ -161,6 +161,142 @@ export const useOpenAI = () => {
     }
   };
 
+  const generateAbstract = async (paperTitle: string, fullPaperContent: string): Promise<string> => {
+    if (!openaiApiKey) {
+      toast({
+        title: "API key required",
+        description: "Please enter your OpenAI API key to generate abstract.",
+        variant: "destructive",
+      });
+      throw new Error("API key required");
+    }
+
+    setIsGenerating(true);
+    
+    try {
+      const openai = new OpenAI({
+        apiKey: openaiApiKey,
+        dangerouslyAllowBrowser: true
+      });
+
+      const prompt = `Write a comprehensive abstract for the academic paper titled "${paperTitle}". 
+      
+      Full paper content:
+      ${fullPaperContent}
+      
+      Generate a well-structured abstract (150-250 words) that includes:
+      - Brief background and motivation
+      - Research objectives and methodology
+      - Key findings and results
+      - Main conclusions and implications
+      
+      Use formal academic language appropriate for scholarly publication.`;
+
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4.1-2025-04-14",
+        messages: [
+          {
+            role: "system",
+            content: "You are an expert academic writer. Generate comprehensive, well-structured abstracts for research papers that accurately summarize the entire work."
+          },
+          {
+            role: "user",
+            content: prompt
+          }
+        ],
+        max_tokens: 400,
+        temperature: 0.7
+      });
+
+      const generatedAbstract = completion.choices[0]?.message?.content || "";
+      
+      toast({
+        title: "Abstract generated",
+        description: "Abstract has been generated based on the full paper content.",
+      });
+
+      return generatedAbstract;
+    } catch (error) {
+      console.error("OpenAI API Error:", error);
+      toast({
+        title: "Generation failed",
+        description: "Failed to generate abstract. Please check your API key and try again.",
+        variant: "destructive",
+      });
+      throw error;
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const suggestTitles = async (paperTitle: string, abstract: string, fullPaperContent: string): Promise<string[]> => {
+    if (!openaiApiKey) {
+      toast({
+        title: "API key required",
+        description: "Please enter your OpenAI API key to suggest titles.",
+        variant: "destructive",
+      });
+      throw new Error("API key required");
+    }
+
+    setIsGenerating(true);
+    
+    try {
+      const openai = new OpenAI({
+        apiKey: openaiApiKey,
+        dangerouslyAllowBrowser: true
+      });
+
+      const context = abstract || fullPaperContent || "No content available";
+      const prompt = `Based on the following academic paper content, suggest 5 alternative titles that are:
+      - Clear and descriptive
+      - Academically appropriate
+      - Concise but informative
+      - Different from the current title: "${paperTitle}"
+      
+      Paper content:
+      ${context}
+      
+      Return only the 5 titles, one per line, without numbering or formatting.`;
+
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4.1-2025-04-14",
+        messages: [
+          {
+            role: "system",
+            content: "You are an expert academic writer. Generate clear, descriptive, and academically appropriate titles for research papers."
+          },
+          {
+            role: "user",
+            content: prompt
+          }
+        ],
+        max_tokens: 300,
+        temperature: 0.8
+      });
+
+      const response = completion.choices[0]?.message?.content || "";
+      const titles = response.split('\n').filter(title => title.trim().length > 0).slice(0, 5);
+      
+      toast({
+        title: "Titles suggested",
+        description: `Generated ${titles.length} alternative titles.`,
+      });
+
+      return titles;
+    } catch (error) {
+      console.error("OpenAI API Error:", error);
+      toast({
+        title: "Generation failed",
+        description: "Failed to suggest titles. Please check your API key and try again.",
+        variant: "destructive",
+      });
+      throw error;
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   const rewriteText = async (selectedText: string, sectionTitle: string, paperTitle: string, abstract: string, prompt?: string): Promise<string> => {
     if (!openaiApiKey) {
       toast({
@@ -219,6 +355,8 @@ export const useOpenAI = () => {
     isGenerating,
     generateSectionContent,
     generateCaption,
+    generateAbstract,
+    suggestTitles,
     rewriteText
   };
 };
