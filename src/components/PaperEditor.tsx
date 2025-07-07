@@ -56,7 +56,14 @@ export const PaperEditor = () => {
       setSections(updatedSections);
       
       // Check if we need to add References section after content generation
-      setTimeout(() => ensureReferencesSection(updatedSections), 100);
+      setTimeout(() => {
+        ensureReferencesSection(updatedSections);
+        // Also update existing References section if citations changed
+        const hasReferences = updatedSections.some(s => s.title.toLowerCase().includes('reference'));
+        if (hasReferences) {
+          setTimeout(() => updateReferencesSection(), 200);
+        }
+      }, 100);
     } catch (error) {
       // Error handled in hook
     }
@@ -146,6 +153,31 @@ export const PaperEditor = () => {
     );
   };
 
+  // Function to extract citation reasons and generate numbered references
+  const generateReferencesFromCitations = (sectionsToCheck = sections) => {
+    const citationReasons = new Set<string>();
+    
+    // Extract all unique citation reasons from all sections
+    sectionsToCheck.forEach(section => {
+      if (section.generatedContent) {
+        const citeMatches = section.generatedContent.match(/\[CITE:\s*([^\]]+)\]/g);
+        if (citeMatches) {
+          citeMatches.forEach(match => {
+            const reason = match.replace(/\[CITE:\s*/, '').replace(/\]/, '').trim();
+            citationReasons.add(reason);
+          });
+        }
+      }
+    });
+
+    // Convert to numbered reference list
+    const references = Array.from(citationReasons).map((reason, index) => 
+      `[${index + 1}] ${reason}`
+    ).join('\n');
+
+    return references || "No citations found in the text.";
+  };
+
   // Automatically add References section when citations are detected
   const ensureReferencesSection = (sectionsToCheck = sections) => {
     const hasReferences = sectionsToCheck.some(s => s.title.toLowerCase().includes('reference'));
@@ -156,16 +188,30 @@ export const PaperEditor = () => {
     console.log('Checking for citations:', { hasCitations, hasReferences, sectionsCount: sectionsToCheck.length });
     
     if (hasCitations && !hasReferences) {
+      const referencesContent = generateReferencesFromCitations(sectionsToCheck);
       const referencesSection = {
         id: `section-references-${Date.now()}`,
         title: "References",
         description: "Academic references and citations",
         bulletPoints: [],
         figures: [],
-        generatedContent: "References will be formatted here based on citation placeholders found in the text.\n\nTo replace placeholders with actual references:\n1. Click on each [CITE: ...] placeholder in your text\n2. Replace with proper citations like [1], [2], etc.\n3. Add corresponding references below:\n\n[1] Author, A. (Year). Title. Journal, Volume(Issue), pages.\n[2] Author, B. (Year). Title. Journal, Volume(Issue), pages."
+        generatedContent: referencesContent
       };
       setSections(prev => [...prev, referencesSection]);
-      console.log('Added References section');
+      console.log('Added References section with generated content');
+    }
+  };
+
+  // Update References section when citations change
+  const updateReferencesSection = () => {
+    const referencesSection = sections.find(s => s.title.toLowerCase().includes('reference'));
+    if (referencesSection) {
+      const updatedReferences = generateReferencesFromCitations();
+      setSections(prev => prev.map(s => 
+        s.id === referencesSection.id 
+          ? { ...s, generatedContent: updatedReferences }
+          : s
+      ));
     }
   };
 
