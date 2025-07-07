@@ -24,21 +24,37 @@ export const useOpenAI = () => {
   }, [openaiApiKey]);
 
   const createSectionPrompt = (section: PaperSection, title: string, abstract: string): string => {
-    let prompt = `Write an academic section for "${section.title}" for a paper titled "${title || 'Academic Research Paper'}".`;
+    const sectionTitle = section.title.toLowerCase();
+    let prompt = "";
+    
+    // Section-specific prompts for more natural, human-like content
+    if (sectionTitle === "abstract") {
+      prompt = `Write a compelling academic abstract for "${title || 'Academic Research Paper'}". This should read like a seasoned researcher's work - clear, confident, and engaging without being overly technical.`;
+    } else if (sectionTitle === "introduction") {
+      prompt = `Write an engaging introduction for "${title || 'Academic Research Paper'}". Start with the broader context and gradually narrow to your specific research question. Write as if you're telling a story about why this research matters, using natural academic prose that flows smoothly.`;
+    } else if (sectionTitle === "methodology") {
+      prompt = `Write a clear methodology section for "${title || 'Academic Research Paper'}". Explain your approach as if you're walking a colleague through your research process. Be precise but conversational in tone, focusing on the logic behind your choices.`;
+    } else if (sectionTitle.includes("results") || sectionTitle.includes("discussion")) {
+      prompt = `Write a results and discussion section for "${title || 'Academic Research Paper'}". Present your findings with confidence and discuss their implications thoughtfully. Write as if you're having an informed conversation with your peers about what you discovered.`;
+    } else if (sectionTitle === "conclusion") {
+      prompt = `Write a conclusion for "${title || 'Academic Research Paper'}". Synthesize your key contributions and their broader significance. Write with the authority of someone who has made genuine progress in their field.`;
+    } else {
+      prompt = `Write an academic section for "${section.title}" for a paper titled "${title || 'Academic Research Paper'}". Write in a natural, scholarly voice that demonstrates deep understanding.`;
+    }
     
     if (abstract) {
-      prompt += ` The paper's abstract is: "${abstract}"`;
+      prompt += ` Context from the paper's abstract: "${abstract}"`;
     }
     
     if (section.description) {
-      prompt += ` The section should cover: ${section.description}`;
+      prompt += ` Focus on: ${section.description}`;
     }
     
     if (section.bulletPoints.length > 0) {
       prompt += ` Key points to address:\n${section.bulletPoints.map(point => `• ${point}`).join('\n')}`;
     }
     
-    prompt += `\n\nWrite 2-3 well-structured paragraphs with proper academic citations [1], [2], etc. Use formal scholarly language appropriate for academic publication.`;
+    prompt += `\n\nWrite 2-3 well-developed paragraphs that sound like they were written by an experienced researcher. Use varied sentence structures, natural transitions, and include citations [1], [2], etc. where appropriate. Avoid formulaic language and write with genuine scholarly voice.`;
     
     return prompt;
   };
@@ -68,7 +84,7 @@ export const useOpenAI = () => {
         messages: [
           {
             role: "system",
-            content: "You are an expert academic writer. Generate well-structured, scholarly content with proper citations in brackets [1], [2], etc. Use formal academic language and include relevant references."
+            content: "You are a distinguished academic researcher with years of publication experience. Write in a natural, scholarly voice that demonstrates expertise without sounding artificial or formulaic. Use varied sentence structures, smooth transitions, and confident prose. Include citations [1], [2], etc. naturally within the flow of ideas. Your writing should sound distinctly human - thoughtful, engaging, and authoritative."
           },
           {
             role: "user",

@@ -47,12 +47,6 @@ const defaultSections: Omit<PaperSection, 'id'>[] = [
     figures: []
   },
   {
-    title: "Related Work",
-    description: "Review of existing literature and previous research",
-    bulletPoints: [],
-    figures: []
-  },
-  {
     title: "Methodology",
     description: "Research methods, experimental setup, and approach",
     bulletPoints: [],
