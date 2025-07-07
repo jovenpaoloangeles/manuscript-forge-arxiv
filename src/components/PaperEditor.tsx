@@ -2,22 +2,21 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FileText, Eye } from "lucide-react";
-import { PaperStructure, PaperSection } from "./PaperStructure";
+import { PaperStructure } from "./PaperStructure";
 import { PaperPreview } from "./PaperPreview";
 import { PaperMetadata } from "./PaperMetadata";
 import { EditorCritique } from "./EditorCritique";
 import { PaperHeader } from "./PaperHeader";
 import { PaperControls } from "./PaperControls";
+import { PaperProvider, usePaper } from "@/contexts/PaperContext";
 import { useCitationDetection } from "@/hooks/useCitationDetection";
 import { usePaperContent } from "@/hooks/usePaperContent";
 import { useSectionManagement } from "@/hooks/useSectionManagement";
 import { SessionData } from "@/hooks/useSessionManager";
 
-export const PaperEditor = () => {
-  const [paperTitle, setPaperTitle] = useState("");
-  const [authors, setAuthors] = useState("");
-  const [sections, setSections] = useState<PaperSection[]>([]);
+const PaperEditorContent = () => {
   const [showGlobalCritique, setShowGlobalCritique] = useState(false);
+  const { paperTitle, authors, sections, setPaperTitle, setAuthors, setSections } = usePaper();
   
   const { hasCitationPlaceholders, ensureReferencesSection } = useCitationDetection({ 
     sections, 
@@ -32,8 +31,6 @@ export const PaperEditor = () => {
   
   const {
     isGenerating,
-    openaiApiKey,
-    setOpenaiApiKey,
     handleGenerateSection,
     handleGenerateCaption,
     handleRewriteSelection,
@@ -61,12 +58,6 @@ export const PaperEditor = () => {
 
         <div className="animate-slide-up" style={{ animationDelay: '0.1s' }}>
           <PaperMetadata
-            paperTitle={paperTitle}
-            setPaperTitle={setPaperTitle}
-            authors={authors}
-            setAuthors={setAuthors}
-            openaiApiKey={openaiApiKey}
-            setOpenaiApiKey={setOpenaiApiKey}
             onSuggestTitles={handleSuggestTitles}
             isGenerating={isGenerating}
           />
@@ -88,10 +79,7 @@ export const PaperEditor = () => {
             <TabsContent value="structure" className="space-y-8">
               <div className="animate-scale-in">
                 <PaperControls
-                  sections={sections}
                   isGenerating={isGenerating}
-                  paperTitle={paperTitle}
-                  authors={authors}
                   hasCitationPlaceholders={hasCitationPlaceholders}
                   ensureReferencesSection={ensureReferencesSection}
                   onGenerateAll={generateAllSections}
@@ -102,22 +90,15 @@ export const PaperEditor = () => {
 
               <div className="animate-scale-in" style={{ animationDelay: '0.1s' }}>
                 <PaperStructure
-                  sections={sections}
-                  onSectionsChange={setSections}
                   onGenerateSection={handleGenerateSection}
                   onGenerateCaption={handleGenerateCaption}
                   onRewriteSelection={handleRewriteSelection}
-                  paperTitle={paperTitle}
                 />
               </div>
             </TabsContent>
 
             <TabsContent value="preview" className="animate-fade-in">
-              <PaperPreview
-                sections={sections}
-                paperTitle={paperTitle}
-                authors={authors}
-              />
+              <PaperPreview />
             </TabsContent>
           </Tabs>
         </div>
@@ -137,5 +118,13 @@ export const PaperEditor = () => {
         </Dialog>
       </div>
     </div>
+  );
+};
+
+export const PaperEditor = () => {
+  return (
+    <PaperProvider>
+      <PaperEditorContent />
+    </PaperProvider>
   );
 };

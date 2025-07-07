@@ -6,6 +6,7 @@ import { SectionCritiqueDialog } from "./SectionCritiqueDialog";
 import { TextRewriteDialog } from "./TextRewriteDialog";
 import { VersionHistoryDialog } from "./VersionHistoryDialog";
 import { useEditableSection } from "@/hooks/useEditableSection";
+import { usePaper } from "@/contexts/PaperContext";
 
 interface EditableSectionProps {
   content: string;
@@ -16,8 +17,6 @@ interface EditableSectionProps {
   onRewriteSelection?: (selectedText: string, prompt?: string) => Promise<string>;
   sectionTitle: string;
   sectionId?: string;
-  paperTitle?: string;
-  abstract?: string;
   className?: string;
 }
 
@@ -30,10 +29,13 @@ export const EditableSection = ({
   onRewriteSelection,
   sectionTitle,
   sectionId,
-  paperTitle,
-  abstract,
   className = ""
 }: EditableSectionProps) => {
+  const { paperTitle, sections } = usePaper();
+  
+  // Get abstract content for passing to dialogs
+  const abstractSection = sections.find(s => s.title.toLowerCase() === 'abstract');
+  const abstract = abstractSection?.generatedContent;
   const [showPreview, setShowPreview] = useState(false);
   const [showCritique, setShowCritique] = useState(false);
 

@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { SectionEditor } from "./SectionEditor";
 import { EmptyStructure } from "./EmptyStructure";
+import { usePaper } from "@/contexts/PaperContext";
 
 export interface SectionFigure {
   id: string;
@@ -21,13 +22,9 @@ export interface PaperSection {
 }
 
 interface PaperStructureProps {
-  sections: PaperSection[];
-  onSectionsChange: (sections: PaperSection[]) => void;
   onGenerateSection: (sectionId: string) => void;
   onGenerateCaption?: (sectionId: string, figureId: string) => void;
   onRewriteSelection?: (sectionId: string, selectedText: string, prompt?: string) => Promise<string>;
-  paperTitle?: string;
-  abstract?: string;
 }
 
 const defaultSections: Omit<PaperSection, 'id'>[] = [
@@ -64,20 +61,21 @@ const defaultSections: Omit<PaperSection, 'id'>[] = [
 ];
 
 export const PaperStructure = ({ 
-  sections, 
-  onSectionsChange, 
   onGenerateSection, 
   onGenerateCaption, 
-  onRewriteSelection,
-  paperTitle,
-  abstract 
+  onRewriteSelection
 }: PaperStructureProps) => {
+  const { sections, setSections, paperTitle } = usePaper();
+  
+  // Get abstract content for passing to child components
+  const abstractSection = sections.find(s => s.title.toLowerCase() === 'abstract');
+  const abstract = abstractSection?.generatedContent;
   const addDefaultStructure = () => {
     const newSections = defaultSections.map((section, index) => ({
       ...section,
       id: `section-${Date.now()}-${index}`
     }));
-    onSectionsChange(newSections);
+    setSections(newSections);
   };
 
   const addCustomSection = () => {
@@ -88,17 +86,17 @@ export const PaperStructure = ({
       bulletPoints: [],
       figures: []
     };
-    onSectionsChange([...sections, newSection]);
+    setSections([...sections, newSection]);
   };
 
   const updateSection = (id: string, updates: Partial<PaperSection>) => {
-    onSectionsChange(sections.map(section => 
+    setSections(sections.map(section => 
       section.id === id ? { ...section, ...updates } : section
     ));
   };
 
   const deleteSection = (id: string) => {
-    onSectionsChange(sections.filter(section => section.id !== id));
+    setSections(sections.filter(section => section.id !== id));
   };
 
   const handleSectionRewriteSelection = async (sectionId: string, selectedText: string, prompt?: string) => {
@@ -139,8 +137,6 @@ export const PaperStructure = ({
           onGenerateSection={() => onGenerateSection(section.id)}
           onGenerateCaption={onGenerateCaption ? (figureId) => onGenerateCaption(section.id, figureId) : undefined}
           onRewriteSelection={(selectedText, prompt) => handleSectionRewriteSelection(section.id, selectedText, prompt)}
-          paperTitle={paperTitle}
-          abstract={abstract}
         />
       ))}
     </div>

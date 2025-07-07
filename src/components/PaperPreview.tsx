@@ -1,27 +1,14 @@
-import { PaperSection } from "./PaperStructure";
 import { ExportControls } from "./ExportControls";
 import { FormattedPreview } from "./FormattedPreview";
+import { usePaper } from "@/contexts/PaperContext";
 
-interface PaperPreviewProps {
-  sections: PaperSection[];
-  paperTitle: string;
-  authors: string;
-}
-
-export const PaperPreview = ({ sections, paperTitle, authors }: PaperPreviewProps) => {
+export const PaperPreview = () => {
+  const { sections, paperTitle, authors } = usePaper();
   return (
     <div className="space-y-6">
-      <ExportControls
-        sections={sections}
-        paperTitle={paperTitle}
-        authors={authors}
-      />
+      <ExportControls />
       
-      <FormattedPreview
-        sections={sections}
-        paperTitle={paperTitle}
-        authors={authors}
-      />
+      <FormattedPreview />
     </div>
   );
 };

@@ -5,28 +5,18 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Settings, Key, Lightbulb, Copy } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { usePaper } from "@/contexts/PaperContext";
 
 interface PaperMetadataProps {
-  paperTitle: string;
-  setPaperTitle: (title: string) => void;
-  authors: string;
-  setAuthors: (authors: string) => void;
-  openaiApiKey: string;  
-  setOpenaiApiKey: (key: string) => void;
   onSuggestTitles?: () => Promise<string[]>;
   isGenerating?: boolean;
 }
 
 export const PaperMetadata = ({
-  paperTitle,
-  setPaperTitle,
-  authors,
-  setAuthors,
-  openaiApiKey,
-  setOpenaiApiKey,
   onSuggestTitles,
   isGenerating
 }: PaperMetadataProps) => {
+  const { paperTitle, setPaperTitle, authors, setAuthors, openaiApiKey, setOpenaiApiKey } = usePaper();
   const [suggestedTitles, setSuggestedTitles] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const { toast } = useToast();

@@ -9,6 +9,7 @@ import { EditableSection } from "./EditableSection";
 import { BulletPointEditor } from "./BulletPointEditor";
 import { SectionFigureEditor } from "./SectionFigureEditor";
 import { PaperSection, SectionFigure } from "./PaperStructure";
+import { usePaper } from "@/contexts/PaperContext";
 
 interface SectionEditorProps {
   section: PaperSection;
@@ -17,8 +18,6 @@ interface SectionEditorProps {
   onGenerateSection: () => void;
   onGenerateCaption?: (figureId: string) => void;
   onRewriteSelection?: (selectedText: string, prompt?: string) => Promise<string>;
-  paperTitle?: string;
-  abstract?: string;
 }
 
 export const SectionEditor = ({
@@ -27,10 +26,13 @@ export const SectionEditor = ({
   onSectionDelete,
   onGenerateSection,
   onGenerateCaption,
-  onRewriteSelection,
-  paperTitle,
-  abstract
+  onRewriteSelection
 }: SectionEditorProps) => {
+  const { paperTitle, sections } = usePaper();
+  
+  // Get abstract content for passing to EditableSection
+  const abstractSection = sections.find(s => s.title.toLowerCase() === 'abstract');
+  const abstract = abstractSection?.generatedContent;
   const [editingTitle, setEditingTitle] = useState(false);
 
   const handleSectionContentChange = (content: string, isManuallyEdited: boolean) => {
@@ -153,8 +155,6 @@ export const SectionEditor = ({
             onRewriteSelection={onRewriteSelection}
             sectionTitle={section.title}
             sectionId={section.id}
-            paperTitle={paperTitle}
-            abstract={abstract}
           />
         </CardContent>
       )}

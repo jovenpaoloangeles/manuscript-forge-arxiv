@@ -3,15 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { FileDown, Copy } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { PaperSection } from "./PaperStructure";
+import { usePaper } from "@/contexts/PaperContext";
 
-interface ExportControlsProps {
-  sections: PaperSection[];
-  paperTitle: string;
-  authors: string;
-}
-
-export const ExportControls = ({ sections, paperTitle, authors }: ExportControlsProps) => {
+export const ExportControls = () => {
+  const { sections, paperTitle, authors } = usePaper();
   const { toast } = useToast();
 
   const getAbstractContent = () => {

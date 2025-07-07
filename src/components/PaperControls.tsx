@@ -1,14 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { GenerationControls } from "./GenerationControls";
 import { SessionManager } from "./SessionManager";
-import { PaperSection } from "./PaperStructure";
 import { SessionData } from "@/hooks/useSessionManager";
+import { usePaper } from "@/contexts/PaperContext";
 
 interface PaperControlsProps {
-  sections: PaperSection[];
   isGenerating: boolean;
-  paperTitle: string;
-  authors: string;
   hasCitationPlaceholders: () => boolean;
   ensureReferencesSection: () => void;
   onGenerateAll: () => void;
@@ -17,16 +14,14 @@ interface PaperControlsProps {
 }
 
 export const PaperControls = ({
-  sections,
   isGenerating,
-  paperTitle,
-  authors,
   hasCitationPlaceholders,
   ensureReferencesSection,
   onGenerateAll,
   onShowGlobalCritique,
   onLoadSession
 }: PaperControlsProps) => {
+  const { sections, paperTitle, authors } = usePaper();
   return (
     <div className="flex justify-between items-center">
       <div className="flex gap-3">

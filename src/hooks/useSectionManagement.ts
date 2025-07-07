@@ -3,6 +3,7 @@ import { useOpenAI } from "@/hooks/useOpenAI";
 import { PaperSection } from "@/components/PaperStructure";
 import { usePaperContent } from "./usePaperContent";
 import { useCitationDetection } from "./useCitationDetection";
+import { usePaper } from "@/contexts/PaperContext";
 
 interface UseSectionManagementProps {
   sections: PaperSection[];
@@ -18,9 +19,8 @@ export const useSectionManagement = ({
   authors 
 }: UseSectionManagementProps) => {
   const { toast } = useToast();
+  const { openaiApiKey } = usePaper();
   const { 
-    openaiApiKey,
-    setOpenaiApiKey,
     isGenerating,
     generateSectionContent,
     generateCaption,
@@ -160,8 +160,6 @@ export const useSectionManagement = ({
 
   return {
     isGenerating,
-    openaiApiKey,
-    setOpenaiApiKey,
     handleGenerateSection,
     handleGenerateCaption,
     handleRewriteSelection,

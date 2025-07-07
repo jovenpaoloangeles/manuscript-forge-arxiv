@@ -1,15 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Eye } from "lucide-react";
-import { PaperSection } from "./PaperStructure";
+import { usePaper } from "@/contexts/PaperContext";
 
-interface FormattedPreviewProps {
-  sections: PaperSection[];
-  paperTitle: string;
-  authors: string;
-}
-
-export const FormattedPreview = ({ sections, paperTitle, authors }: FormattedPreviewProps) => {
+export const FormattedPreview = () => {
+  const { sections, paperTitle, authors } = usePaper();
   const getAbstractContent = () => {
     const abstractSection = sections.find(s => s.title.toLowerCase() === 'abstract');
     return abstractSection?.generatedContent || '';
