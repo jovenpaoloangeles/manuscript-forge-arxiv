@@ -119,6 +119,82 @@ export const PaperEditor = () => {
     return prompt;
   };
 
+  const generateSectionCaption = async (sectionId: string, figureId: string) => {
+    const section = sections.find(s => s.id === sectionId);
+    const figure = section?.figures.find(f => f.id === figureId);
+    
+    if (!section || !figure || !figure.description.trim()) return;
+
+    if (!openaiApiKey) {
+      toast({
+        title: "API key required",
+        description: "Please enter your OpenAI API key to generate captions.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsGenerating(true);
+    
+    try {
+      const openai = new OpenAI({
+        apiKey: openaiApiKey,
+        dangerouslyAllowBrowser: true
+      });
+
+      const prompt = `Write a brief, academic figure caption for: "${figure.description}". 
+      Context: This figure is in the "${section.title}" section of a paper titled "${paperTitle || 'Academic Research Paper'}".
+      ${abstract ? `Paper abstract: "${abstract}"` : ''}
+      
+      Generate a concise, professional caption (1-2 sentences) that would be appropriate for an academic publication.`;
+
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4.1-2025-04-14",
+        messages: [
+          {
+            role: "system",
+            content: "You are an expert academic writer. Generate brief, professional figure captions suitable for academic publications."
+          },
+          {
+            role: "user",
+            content: prompt
+          }
+        ],
+        max_tokens: 150,
+        temperature: 0.7
+      });
+
+      const generatedCaption = completion.choices[0]?.message?.content || "";
+      
+      setSections(sections.map(s => 
+        s.id === sectionId 
+          ? { 
+              ...s, 
+              figures: s.figures.map(f => 
+                f.id === figureId 
+                  ? { ...f, caption: generatedCaption }
+                  : f
+              )
+            }
+          : s
+      ));
+
+      toast({
+        title: "Caption generated",
+        description: "Figure caption has been generated successfully.",
+      });
+    } catch (error) {
+      console.error("OpenAI API Error:", error);
+      toast({
+        title: "Generation failed",
+        description: "Failed to generate caption. Please check your API key and try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   const generateAllSections = async () => {
     if (!openaiApiKey) {
       toast({
@@ -268,6 +344,7 @@ export const PaperEditor = () => {
               sections={sections}
               onSectionsChange={setSections}
               onGenerateSection={generateSectionContent}
+              onGenerateCaption={generateSectionCaption}
             />
           </TabsContent>
 

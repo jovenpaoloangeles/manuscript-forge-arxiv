@@ -4,13 +4,20 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, GripVertical, FileText } from "lucide-react";
+import { Plus, Trash2, GripVertical, FileText, Image, Wand2 } from "lucide-react";
+
+export interface SectionFigure {
+  id: string;
+  description: string;
+  caption?: string;
+}
 
 export interface PaperSection {
   id: string;
   title: string;
   description: string;
   bulletPoints: string[];
+  figures: SectionFigure[];
   generatedContent?: string;
 }
 
@@ -18,47 +25,55 @@ interface PaperStructureProps {
   sections: PaperSection[];
   onSectionsChange: (sections: PaperSection[]) => void;
   onGenerateSection: (sectionId: string) => void;
+  onGenerateCaption?: (sectionId: string, figureId: string) => void;
 }
 
 const defaultSections: Omit<PaperSection, 'id'>[] = [
   {
     title: "Abstract",
     description: "Brief summary of the research, methodology, and key findings",
-    bulletPoints: []
+    bulletPoints: [],
+    figures: []
   },
   {
     title: "Introduction",
     description: "Background, motivation, and research objectives",
-    bulletPoints: []
+    bulletPoints: [],
+    figures: []
   },
   {
     title: "Related Work",
     description: "Review of existing literature and previous research",
-    bulletPoints: []
+    bulletPoints: [],
+    figures: []
   },
   {
     title: "Methodology",
     description: "Research methods, experimental setup, and approach",
-    bulletPoints: []
+    bulletPoints: [],
+    figures: []
   },
   {
     title: "Results",
     description: "Experimental results and findings",
-    bulletPoints: []
+    bulletPoints: [],
+    figures: []
   },
   {
     title: "Discussion",
     description: "Interpretation of results and implications",
-    bulletPoints: []
+    bulletPoints: [],
+    figures: []
   },
   {
     title: "Conclusion",
     description: "Summary of contributions and future work",
-    bulletPoints: []
+    bulletPoints: [],
+    figures: []
   }
 ];
 
-export const PaperStructure = ({ sections, onSectionsChange, onGenerateSection }: PaperStructureProps) => {
+export const PaperStructure = ({ sections, onSectionsChange, onGenerateSection, onGenerateCaption }: PaperStructureProps) => {
   const [editingSection, setEditingSection] = useState<string | null>(null);
 
   const addDefaultStructure = () => {
@@ -74,7 +89,8 @@ export const PaperStructure = ({ sections, onSectionsChange, onGenerateSection }
       id: `section-${Date.now()}`,
       title: "New Section",
       description: "",
-      bulletPoints: []
+      bulletPoints: [],
+      figures: []
     };
     onSectionsChange([...sections, newSection]);
     setEditingSection(newSection.id);
@@ -110,6 +126,35 @@ export const PaperStructure = ({ sections, onSectionsChange, onGenerateSection }
     if (section) {
       const newBulletPoints = section.bulletPoints.filter((_, i) => i !== index);
       updateSection(sectionId, { bulletPoints: newBulletPoints });
+    }
+  };
+
+  const addFigure = (sectionId: string) => {
+    const newFigure: SectionFigure = {
+      id: `figure-${Date.now()}`,
+      description: "",
+      caption: ""
+    };
+    updateSection(sectionId, {
+      figures: [...(sections.find(s => s.id === sectionId)?.figures || []), newFigure]
+    });
+  };
+
+  const updateFigure = (sectionId: string, figureId: string, updates: Partial<SectionFigure>) => {
+    const section = sections.find(s => s.id === sectionId);
+    if (section) {
+      const updatedFigures = section.figures.map(figure => 
+        figure.id === figureId ? { ...figure, ...updates } : figure
+      );
+      updateSection(sectionId, { figures: updatedFigures });
+    }
+  };
+
+  const deleteFigure = (sectionId: string, figureId: string) => {
+    const section = sections.find(s => s.id === sectionId);
+    if (section) {
+      const updatedFigures = section.figures.filter(figure => figure.id !== figureId);
+      updateSection(sectionId, { figures: updatedFigures });
     }
   };
 
@@ -243,6 +288,72 @@ export const PaperStructure = ({ sections, onSectionsChange, onGenerateSection }
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-sm font-medium text-academic-text">
+                  Figures ({section.figures.length})
+                </label>
+                <Button
+                  onClick={() => addFigure(section.id)}
+                  variant="ghost"
+                  size="sm"
+                  className="text-academic-blue"
+                >
+                  <Plus className="h-4 w-4" />
+                  Add Figure
+                </Button>
+              </div>
+              <div className="space-y-3">
+                {section.figures.map((figure) => (
+                  <div key={figure.id} className="border rounded-md p-3 bg-academic-light/50">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Image className="h-4 w-4 text-academic-blue" />
+                        <Input
+                          value={figure.description}
+                          onChange={(e) => updateFigure(section.id, figure.id, { description: e.target.value })}
+                          placeholder="Brief description of the figure..."
+                          className="flex-1 text-sm"
+                        />
+                        <Button
+                          onClick={() => onGenerateCaption?.(section.id, figure.id)}
+                          variant="ghost"
+                          size="sm"
+                          disabled={!figure.description.trim() || !onGenerateCaption}
+                          className="text-academic-blue"
+                        >
+                          <Wand2 className="h-4 w-4" />
+                          Generate Caption
+                        </Button>
+                        <Button
+                          onClick={() => deleteFigure(section.id, figure.id)}
+                          variant="ghost"
+                          size="sm"
+                          className="text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      {figure.caption && (
+                        <div>
+                          <label className="text-xs font-medium text-academic-muted block mb-1">
+                            Generated Caption:
+                          </label>
+                          <Textarea
+                            value={figure.caption}
+                            onChange={(e) => updateFigure(section.id, figure.id, { caption: e.target.value })}
+                            rows={2}
+                            className="text-sm resize-none"
+                            placeholder="Caption will appear here..."
+                          />
+                        </div>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
