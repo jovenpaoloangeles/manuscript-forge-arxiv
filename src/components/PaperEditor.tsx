@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { PaperStructure, PaperSection } from "./PaperStructure";
 import { PaperPreview } from "./PaperPreview";
 import { PaperMetadata } from "./PaperMetadata";
@@ -47,14 +48,15 @@ export const PaperEditor = () => {
         generatedContent = await generateSectionContent(section, paperTitle, abstractContent);
       }
       
-      setSections(sections.map(s => 
+      const updatedSections = sections.map(s => 
         s.id === sectionId 
           ? { ...s, generatedContent }
           : s
-      ));
+      );
+      setSections(updatedSections);
       
       // Check if we need to add References section after content generation
-      setTimeout(() => ensureReferencesSection(), 100);
+      setTimeout(() => ensureReferencesSection(updatedSections), 100);
     } catch (error) {
       // Error handled in hook
     }
@@ -130,6 +132,13 @@ export const PaperEditor = () => {
     setSections(session.sections);
   };
 
+  // Check for citations on mount and when sections change
+  useEffect(() => {
+    if (sections.length > 0) {
+      setTimeout(() => ensureReferencesSection(), 500);
+    }
+  }, [sections.length]);
+
   // Function to detect citation placeholders in content
   const hasCitationPlaceholders = () => {
     return sections.some(section => 
@@ -138,9 +147,13 @@ export const PaperEditor = () => {
   };
 
   // Automatically add References section when citations are detected
-  const ensureReferencesSection = () => {
-    const hasReferences = sections.some(s => s.title.toLowerCase().includes('reference'));
-    const hasCitations = hasCitationPlaceholders();
+  const ensureReferencesSection = (sectionsToCheck = sections) => {
+    const hasReferences = sectionsToCheck.some(s => s.title.toLowerCase().includes('reference'));
+    const hasCitations = sectionsToCheck.some(section => 
+      section.generatedContent && section.generatedContent.includes('[CITE:')
+    );
+    
+    console.log('Checking for citations:', { hasCitations, hasReferences, sectionsCount: sectionsToCheck.length });
     
     if (hasCitations && !hasReferences) {
       const referencesSection = {
@@ -149,9 +162,10 @@ export const PaperEditor = () => {
         description: "Academic references and citations",
         bulletPoints: [],
         figures: [],
-        generatedContent: "References will be formatted here based on citation placeholders found in the text."
+        generatedContent: "References will be formatted here based on citation placeholders found in the text.\n\nTo replace placeholders with actual references:\n1. Click on each [CITE: ...] placeholder in your text\n2. Replace with proper citations like [1], [2], etc.\n3. Add corresponding references below:\n\n[1] Author, A. (Year). Title. Journal, Volume(Issue), pages.\n[2] Author, B. (Year). Title. Journal, Volume(Issue), pages."
       };
       setSections(prev => [...prev, referencesSection]);
+      console.log('Added References section');
     }
   };
 
@@ -237,13 +251,23 @@ export const PaperEditor = () => {
           </TabsList>
 
           <TabsContent value="structure" className="space-y-6">
-            <div className="flex justify-between items-center">
-              <GenerationControls
-                sections={sections}
-                isGenerating={isGenerating}
-                onGenerateAll={generateAllSections}
-                onShowGlobalCritique={() => setShowGlobalCritique(true)}
-              />
+          <div className="flex justify-between items-center">
+              <div className="flex gap-3">
+                <GenerationControls
+                  sections={sections}
+                  isGenerating={isGenerating}
+                  onGenerateAll={generateAllSections}
+                  onShowGlobalCritique={() => setShowGlobalCritique(true)}
+                />
+                <Button
+                  onClick={() => ensureReferencesSection()}
+                  variant="academicOutline"
+                  size="sm"
+                  disabled={!hasCitationPlaceholders()}
+                >
+                  Add References Section
+                </Button>
+              </div>
               <SessionManager
                 paperTitle={paperTitle}
                 authors={authors}
