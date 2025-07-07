@@ -85,7 +85,7 @@ export const EditableSection = ({
   };
 
   return (
-    <div className={`group ${className}`}>
+    <div className={`group space-y-6 ${className}`}>
       <SectionActionButtons
         isEditing={isEditing}
         isManuallyEdited={isManuallyEdited}
@@ -105,10 +105,10 @@ export const EditableSection = ({
         onSaveChanges={handleSaveChanges}
         onCancelEdit={handleCancelEdit}
         onTextSelect={handleTextSelection}
-        className="border rounded-lg"
+        className="animate-fade-in"
       />
 
-      {/* Dialogs */}
+      {/* Dialogs with enhanced styling */}
       <SectionPreviewDialog
         isOpen={showPreview}
         onClose={() => setShowPreview(false)}

@@ -53,69 +53,81 @@ export const PaperEditor = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-academic-light to-background">
-      <div className="max-w-7xl mx-auto p-6 space-y-6">
-        <PaperHeader />
+    <div className="min-h-screen bg-gradient-subtle">
+      <div className="max-w-7xl mx-auto p-6 space-y-8">
+        <div className="animate-fade-in">
+          <PaperHeader />
+        </div>
 
-        <PaperMetadata
-          paperTitle={paperTitle}
-          setPaperTitle={setPaperTitle}
-          authors={authors}
-          setAuthors={setAuthors}
-          openaiApiKey={openaiApiKey}
-          setOpenaiApiKey={setOpenaiApiKey}
-          onSuggestTitles={handleSuggestTitles}
-          isGenerating={isGenerating}
-        />
+        <div className="animate-slide-up" style={{ animationDelay: '0.1s' }}>
+          <PaperMetadata
+            paperTitle={paperTitle}
+            setPaperTitle={setPaperTitle}
+            authors={authors}
+            setAuthors={setAuthors}
+            openaiApiKey={openaiApiKey}
+            setOpenaiApiKey={setOpenaiApiKey}
+            onSuggestTitles={handleSuggestTitles}
+            isGenerating={isGenerating}
+          />
+        </div>
 
-        <Tabs defaultValue="structure" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto">
-            <TabsTrigger value="structure" className="flex items-center gap-2">
-              <FileText className="h-4 w-4" />
-              Structure
-            </TabsTrigger>
-            <TabsTrigger value="preview" className="flex items-center gap-2">
-              <Eye className="h-4 w-4" />
-              Preview
-            </TabsTrigger>
-          </TabsList>
+        <div className="animate-slide-up" style={{ animationDelay: '0.2s' }}>
+          <Tabs defaultValue="structure" className="space-y-8">
+            <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto glass shadow-card hover:shadow-card-hover transition-all duration-300">
+              <TabsTrigger value="structure" className="flex items-center gap-2 transition-all duration-200 hover:-translate-y-0.5">
+                <FileText className="h-4 w-4" />
+                Structure
+              </TabsTrigger>
+              <TabsTrigger value="preview" className="flex items-center gap-2 transition-all duration-200 hover:-translate-y-0.5">
+                <Eye className="h-4 w-4" />
+                Preview
+              </TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="structure" className="space-y-6">
-            <PaperControls
-              sections={sections}
-              isGenerating={isGenerating}
-              paperTitle={paperTitle}
-              authors={authors}
-              hasCitationPlaceholders={hasCitationPlaceholders}
-              ensureReferencesSection={ensureReferencesSection}
-              onGenerateAll={generateAllSections}
-              onShowGlobalCritique={() => setShowGlobalCritique(true)}
-              onLoadSession={handleLoadSession}
-            />
+            <TabsContent value="structure" className="space-y-8">
+              <div className="animate-scale-in">
+                <PaperControls
+                  sections={sections}
+                  isGenerating={isGenerating}
+                  paperTitle={paperTitle}
+                  authors={authors}
+                  hasCitationPlaceholders={hasCitationPlaceholders}
+                  ensureReferencesSection={ensureReferencesSection}
+                  onGenerateAll={generateAllSections}
+                  onShowGlobalCritique={() => setShowGlobalCritique(true)}
+                  onLoadSession={handleLoadSession}
+                />
+              </div>
 
-            <PaperStructure
-              sections={sections}
-              onSectionsChange={setSections}
-              onGenerateSection={handleGenerateSection}
-              onGenerateCaption={handleGenerateCaption}
-              onRewriteSelection={handleRewriteSelection}
-              paperTitle={paperTitle}
-            />
-          </TabsContent>
+              <div className="animate-scale-in" style={{ animationDelay: '0.1s' }}>
+                <PaperStructure
+                  sections={sections}
+                  onSectionsChange={setSections}
+                  onGenerateSection={handleGenerateSection}
+                  onGenerateCaption={handleGenerateCaption}
+                  onRewriteSelection={handleRewriteSelection}
+                  paperTitle={paperTitle}
+                />
+              </div>
+            </TabsContent>
 
-          <TabsContent value="preview">
-            <PaperPreview
-              sections={sections}
-              paperTitle={paperTitle}
-              authors={authors}
-            />
-          </TabsContent>
-        </Tabs>
+            <TabsContent value="preview" className="animate-fade-in">
+              <PaperPreview
+                sections={sections}
+                paperTitle={paperTitle}
+                authors={authors}
+              />
+            </TabsContent>
+          </Tabs>
+        </div>
 
         <Dialog open={showGlobalCritique} onOpenChange={setShowGlobalCritique}>
-          <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto glass">
             <DialogHeader>
-              <DialogTitle>Full Paper Review & Critique</DialogTitle>
+              <DialogTitle className="text-xl font-semibold bg-gradient-academic bg-clip-text text-transparent">
+                Full Paper Review & Critique
+              </DialogTitle>
             </DialogHeader>
             <EditorCritique
               content={getFullPaperContent()}
