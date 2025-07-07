@@ -5,10 +5,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { PaperStructure, PaperSection } from "./PaperStructure";
 import { PaperPreview } from "./PaperPreview";
+import { EditorCritique } from "./EditorCritique";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FileText, Settings, Eye, Wand2, Key } from "lucide-react";
+import { FileText, Settings, Eye, Wand2, Key, MessageSquare } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import OpenAI from "openai";
 
@@ -19,6 +21,7 @@ export const PaperEditor = () => {
   const [sections, setSections] = useState<PaperSection[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [openaiApiKey, setOpenaiApiKey] = useState("");
+  const [showGlobalCritique, setShowGlobalCritique] = useState(false);
   const { toast } = useToast();
 
   // Load API key from localStorage on mount
@@ -195,6 +198,71 @@ export const PaperEditor = () => {
     }
   };
 
+  const rewriteSelectedText = async (sectionId: string, selectedText: string, prompt?: string): Promise<string> => {
+    if (!openaiApiKey) {
+      toast({
+        title: "API key required",
+        description: "Please enter your OpenAI API key to rewrite text.",
+        variant: "destructive",
+      });
+      throw new Error("API key required");
+    }
+
+    const section = sections.find(s => s.id === sectionId);
+    
+    try {
+      const openai = new OpenAI({
+        apiKey: openaiApiKey,
+        dangerouslyAllowBrowser: true
+      });
+
+      let rewritePrompt = `Rewrite the following text from an academic paper to improve it while maintaining academic tone and accuracy: "${selectedText}"`;
+      
+      if (prompt) {
+        rewritePrompt += `\n\nSpecific instructions: ${prompt}`;
+      }
+      
+      if (section) {
+        rewritePrompt += `\n\nContext: This text is from the "${section.title}" section of a paper titled "${paperTitle || 'Academic Research Paper'}".`;
+      }
+      
+      if (abstract) {
+        rewritePrompt += `\nPaper abstract: "${abstract}"`;
+      }
+
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4.1-2025-04-14",
+        messages: [
+          {
+            role: "system",
+            content: "You are an expert academic editor. Rewrite the provided text to improve clarity, flow, and academic quality while maintaining the original meaning and technical accuracy."
+          },
+          {
+            role: "user",
+            content: rewritePrompt
+          }
+        ],
+        max_tokens: 500,
+        temperature: 0.7
+      });
+
+      const rewrittenText = completion.choices[0]?.message?.content || selectedText;
+      return rewrittenText;
+    } catch (error) {
+      console.error("OpenAI API Error:", error);
+      throw error;
+    }
+  };
+
+  const getFullPaperContent = () => {
+    const fullContent = sections
+      .filter(s => s.generatedContent)
+      .map(s => `${s.title}\n\n${s.generatedContent}`)
+      .join('\n\n');
+    
+    return `Title: ${paperTitle}\n\nAuthors: ${authors}\n\nAbstract:\n${abstract}\n\n${fullContent}`;
+  };
+
   const generateAllSections = async () => {
     if (!openaiApiKey) {
       toast({
@@ -328,15 +396,26 @@ export const PaperEditor = () => {
                 )}
               </div>
               {sections.length > 0 && (
-                <Button
-                  onClick={generateAllSections}
-                  variant="academic"
-                  disabled={isGenerating || sections.every(s => s.generatedContent)}
-                  className="flex items-center gap-2"
-                >
-                  <Wand2 className="h-4 w-4" />
-                  Generate All Sections
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => setShowGlobalCritique(true)}
+                    variant="academicOutline"
+                    disabled={sections.filter(s => s.generatedContent).length === 0}
+                    className="flex items-center gap-2"
+                  >
+                    <MessageSquare className="h-4 w-4" />
+                    Review Full Paper
+                  </Button>
+                  <Button
+                    onClick={generateAllSections}
+                    variant="academic"
+                    disabled={isGenerating || sections.every(s => s.generatedContent)}
+                    className="flex items-center gap-2"
+                  >
+                    <Wand2 className="h-4 w-4" />
+                    Generate All Sections
+                  </Button>
+                </div>
               )}
             </div>
 
@@ -345,6 +424,9 @@ export const PaperEditor = () => {
               onSectionsChange={setSections}
               onGenerateSection={generateSectionContent}
               onGenerateCaption={generateSectionCaption}
+              onRewriteSelection={rewriteSelectedText}
+              paperTitle={paperTitle}
+              abstract={abstract}
             />
           </TabsContent>
 
@@ -357,6 +439,20 @@ export const PaperEditor = () => {
             />
           </TabsContent>
         </Tabs>
+
+        {/* Global Critique Dialog */}
+        <Dialog open={showGlobalCritique} onOpenChange={setShowGlobalCritique}>
+          <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Full Paper Review & Critique</DialogTitle>
+            </DialogHeader>
+            <EditorCritique
+              content={getFullPaperContent()}
+              paperTitle={paperTitle}
+              abstract={abstract}
+            />
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

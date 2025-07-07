@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Trash2, GripVertical, FileText, Image, Wand2 } from "lucide-react";
+import { EditableSection } from "./EditableSection";
 
 export interface SectionFigure {
   id: string;
@@ -19,6 +20,7 @@ export interface PaperSection {
   bulletPoints: string[];
   figures: SectionFigure[];
   generatedContent?: string;
+  isManuallyEdited?: boolean;
 }
 
 interface PaperStructureProps {
@@ -26,6 +28,9 @@ interface PaperStructureProps {
   onSectionsChange: (sections: PaperSection[]) => void;
   onGenerateSection: (sectionId: string) => void;
   onGenerateCaption?: (sectionId: string, figureId: string) => void;
+  onRewriteSelection?: (sectionId: string, selectedText: string, prompt?: string) => Promise<string>;
+  paperTitle?: string;
+  abstract?: string;
 }
 
 const defaultSections: Omit<PaperSection, 'id'>[] = [
@@ -73,7 +78,15 @@ const defaultSections: Omit<PaperSection, 'id'>[] = [
   }
 ];
 
-export const PaperStructure = ({ sections, onSectionsChange, onGenerateSection, onGenerateCaption }: PaperStructureProps) => {
+export const PaperStructure = ({ 
+  sections, 
+  onSectionsChange, 
+  onGenerateSection, 
+  onGenerateCaption, 
+  onRewriteSelection,
+  paperTitle,
+  abstract 
+}: PaperStructureProps) => {
   const [editingSection, setEditingSection] = useState<string | null>(null);
 
   const addDefaultStructure = () => {
@@ -156,6 +169,24 @@ export const PaperStructure = ({ sections, onSectionsChange, onGenerateSection, 
       const updatedFigures = section.figures.filter(figure => figure.id !== figureId);
       updateSection(sectionId, { figures: updatedFigures });
     }
+  };
+
+  const handleSectionContentChange = (sectionId: string, content: string, isManuallyEdited: boolean) => {
+    updateSection(sectionId, { 
+      generatedContent: content,
+      isManuallyEdited 
+    });
+  };
+
+  const handleSectionRegenerate = (sectionId: string) => {
+    onGenerateSection(sectionId);
+  };
+
+  const handleSectionRewriteSelection = async (sectionId: string, selectedText: string, prompt?: string) => {
+    if (onRewriteSelection) {
+      return await onRewriteSelection(sectionId, selectedText, prompt);
+    }
+    throw new Error("Rewrite selection not available");
   };
 
   if (sections.length === 0) {
@@ -359,6 +390,28 @@ export const PaperStructure = ({ sections, onSectionsChange, onGenerateSection, 
               </div>
             </div>
           </CardContent>
+          
+          {/* Section Content Editor */}
+          {section.generatedContent && (
+            <CardContent className="pt-0">
+              <EditableSection
+                content={section.generatedContent}
+                generatedContent={section.generatedContent}
+                isManuallyEdited={section.isManuallyEdited || false}
+                onContentChange={(content, isManuallyEdited) => 
+                  handleSectionContentChange(section.id, content, isManuallyEdited)
+                }
+                onRegenerate={() => handleSectionRegenerate(section.id)}
+                onRewriteSelection={(selectedText, prompt) => 
+                  handleSectionRewriteSelection(section.id, selectedText, prompt)
+                }
+                sectionTitle={section.title}
+                sectionId={section.id}
+                paperTitle={paperTitle}
+                abstract={abstract}
+              />
+            </CardContent>
+          )}
         </Card>
       ))}
     </div>
