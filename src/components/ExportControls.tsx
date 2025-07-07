@@ -4,13 +4,14 @@ import { Badge } from "@/components/ui/badge";
 import { FileDown, Copy } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { usePaper } from "@/contexts/PaperContext";
+import { SECTION_TYPES } from "@/lib/constants";
 
 export const ExportControls = () => {
   const { sections, paperTitle, authors } = usePaper();
   const { toast } = useToast();
 
   const getAbstractContent = () => {
-    const abstractSection = sections.find(s => s.title.toLowerCase() === 'abstract');
+    const abstractSection = sections.find(s => s.title.toLowerCase() === SECTION_TYPES.ABSTRACT);
     return abstractSection?.generatedContent || '';
   };
 

@@ -4,6 +4,7 @@ import { PaperSection } from "@/components/PaperStructure";
 import { usePaperContent } from "./usePaperContent";
 import { useCitationDetection } from "./useCitationDetection";
 import { usePaper } from "@/contexts/PaperContext";
+import { TOAST_MESSAGES, SECTION_TYPES } from "@/lib/constants";
 
 interface UseSectionManagementProps {
   sections: PaperSection[];
@@ -40,11 +41,11 @@ export const useSectionManagement = ({
       let generatedContent;
       
       // Special handling for Abstract section
-      if (section.title.toLowerCase() === 'abstract') {
+      if (section.title.toLowerCase() === SECTION_TYPES.ABSTRACT) {
         const fullPaperContent = getFullPaperContentForContext();
         generatedContent = await generateAbstract(paperTitle, fullPaperContent);
       } else {
-        const abstractSection = sections.find(s => s.title.toLowerCase() === 'abstract');
+        const abstractSection = sections.find(s => s.title.toLowerCase() === SECTION_TYPES.ABSTRACT);
         const abstractContent = abstractSection?.generatedContent || '';
         generatedContent = await generateSectionContent(section, paperTitle, abstractContent);
       }
@@ -77,7 +78,7 @@ export const useSectionManagement = ({
     if (!section || !figure || !figure.description.trim()) return;
 
     try {
-      const abstractSection = sections.find(s => s.title.toLowerCase() === 'abstract');
+      const abstractSection = sections.find(s => s.title.toLowerCase() === SECTION_TYPES.ABSTRACT);
       const abstractContent = abstractSection?.generatedContent || '';
       
       const generatedCaption = await generateCaption(
@@ -106,7 +107,7 @@ export const useSectionManagement = ({
 
   const handleRewriteSelection = async (sectionId: string, selectedText: string, prompt?: string): Promise<string> => {
     const section = sections.find(s => s.id === sectionId);
-    const abstractSection = sections.find(s => s.title.toLowerCase() === 'abstract');
+    const abstractSection = sections.find(s => s.title.toLowerCase() === SECTION_TYPES.ABSTRACT);
     const abstractContent = abstractSection?.generatedContent || '';
     
     return await rewriteText(
@@ -120,7 +121,7 @@ export const useSectionManagement = ({
 
   const handleSuggestTitles = async () => {
     try {
-      const abstractSection = sections.find(s => s.title.toLowerCase() === 'abstract');
+      const abstractSection = sections.find(s => s.title.toLowerCase() === SECTION_TYPES.ABSTRACT);
       const abstractContent = abstractSection?.generatedContent || '';
       const fullPaperContent = getFullPaperContentForContext();
       
@@ -137,8 +138,8 @@ export const useSectionManagement = ({
   const generateAllSections = async () => {
     if (!openaiApiKey) {
       toast({
-        title: "API key required",
-        description: "Please enter your OpenAI API key to generate content.",
+        title: TOAST_MESSAGES.API_KEY_REQUIRED.title,
+        description: TOAST_MESSAGES.API_KEY_REQUIRED.description,
         variant: "destructive",
       });
       return;

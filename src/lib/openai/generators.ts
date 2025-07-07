@@ -7,6 +7,7 @@ import {
   createRewritePrompt 
 } from "./prompts";
 import { PaperSection } from "@/components/PaperStructure";
+import { OPENAI_CONFIG } from "@/lib/constants";
 
 const SYSTEM_MESSAGES = {
   sectionGeneration: "You are a distinguished academic researcher with years of publication experience. Write in a natural, scholarly voice that demonstrates expertise without sounding artificial or formulaic. Use varied sentence structures, smooth transitions, and confident prose. ALWAYS include citation placeholders in the format [CITE: Short Reason for Citation] where appropriate for academic writing (e.g., prior work, methodologies, specific claims). Your writing should sound distinctly human - thoughtful, engaging, and authoritative.",
@@ -26,7 +27,7 @@ export const generateSectionContent = async (
   const prompt = createSectionPrompt(section, paperTitle, abstract);
 
   const completion = await openai.chat.completions.create({
-    model: "gpt-4.1-2025-04-14",
+    model: OPENAI_CONFIG.MODEL,
     messages: [
       {
         role: "system",
@@ -37,8 +38,8 @@ export const generateSectionContent = async (
         content: prompt
       }
     ],
-    max_tokens: 1000,
-    temperature: 0.7
+    max_tokens: OPENAI_CONFIG.MAX_TOKENS.SECTION_CONTENT,
+    temperature: OPENAI_CONFIG.TEMPERATURE.DEFAULT
   });
 
   return completion.choices[0]?.message?.content || "";
@@ -55,7 +56,7 @@ export const generateCaption = async (
   const prompt = createCaptionPrompt(figureDescription, sectionTitle, paperTitle, abstract);
 
   const completion = await openai.chat.completions.create({
-    model: "gpt-4.1-2025-04-14",
+    model: OPENAI_CONFIG.MODEL,
     messages: [
       {
         role: "system",
@@ -66,8 +67,8 @@ export const generateCaption = async (
         content: prompt
       }
     ],
-    max_tokens: 150,
-    temperature: 0.7
+    max_tokens: OPENAI_CONFIG.MAX_TOKENS.CAPTION,
+    temperature: OPENAI_CONFIG.TEMPERATURE.DEFAULT
   });
 
   return completion.choices[0]?.message?.content || "";
@@ -82,7 +83,7 @@ export const generateAbstract = async (
   const prompt = createAbstractPrompt(paperTitle, fullPaperContent);
 
   const completion = await openai.chat.completions.create({
-    model: "gpt-4.1-2025-04-14",
+    model: OPENAI_CONFIG.MODEL,
     messages: [
       {
         role: "system",
@@ -93,8 +94,8 @@ export const generateAbstract = async (
         content: prompt
       }
     ],
-    max_tokens: 400,
-    temperature: 0.7
+    max_tokens: OPENAI_CONFIG.MAX_TOKENS.ABSTRACT,
+    temperature: OPENAI_CONFIG.TEMPERATURE.DEFAULT
   });
 
   return completion.choices[0]?.message?.content || "";
@@ -111,7 +112,7 @@ export const suggestTitles = async (
   const prompt = createTitleSuggestionPrompt(paperTitle, context);
 
   const completion = await openai.chat.completions.create({
-    model: "gpt-4.1-2025-04-14",
+    model: OPENAI_CONFIG.MODEL,
     messages: [
       {
         role: "system",
@@ -122,8 +123,8 @@ export const suggestTitles = async (
         content: prompt
       }
     ],
-    max_tokens: 300,
-    temperature: 0.8
+    max_tokens: OPENAI_CONFIG.MAX_TOKENS.TITLE_SUGGESTION,
+    temperature: OPENAI_CONFIG.TEMPERATURE.TITLE_SUGGESTION
   });
 
   const response = completion.choices[0]?.message?.content || "";
@@ -142,7 +143,7 @@ export const rewriteText = async (
   const rewritePrompt = createRewritePrompt(selectedText, sectionTitle, paperTitle, abstract, prompt);
 
   const completion = await openai.chat.completions.create({
-    model: "gpt-4.1-2025-04-14",
+    model: OPENAI_CONFIG.MODEL,
     messages: [
       {
         role: "system",
@@ -153,8 +154,8 @@ export const rewriteText = async (
         content: rewritePrompt
       }
     ],
-    max_tokens: 500,
-    temperature: 0.7
+    max_tokens: OPENAI_CONFIG.MAX_TOKENS.TEXT_REWRITE,
+    temperature: OPENAI_CONFIG.TEMPERATURE.DEFAULT
   });
 
   return completion.choices[0]?.message?.content || selectedText;

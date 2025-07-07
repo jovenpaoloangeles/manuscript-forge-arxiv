@@ -4,6 +4,7 @@ import { Plus } from "lucide-react";
 import { SectionEditor } from "./SectionEditor";
 import { EmptyStructure } from "./EmptyStructure";
 import { usePaper } from "@/contexts/PaperContext";
+import { SECTION_TYPES } from "@/lib/constants";
 
 export interface SectionFigure {
   id: string;
@@ -68,7 +69,7 @@ export const PaperStructure = ({
   const { sections, setSections, paperTitle } = usePaper();
   
   // Get abstract content for passing to child components
-  const abstractSection = sections.find(s => s.title.toLowerCase() === 'abstract');
+  const abstractSection = sections.find(s => s.title.toLowerCase() === SECTION_TYPES.ABSTRACT);
   const abstract = abstractSection?.generatedContent;
   const addDefaultStructure = () => {
     const newSections = defaultSections.map((section, index) => ({

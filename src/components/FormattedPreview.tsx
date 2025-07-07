@@ -2,11 +2,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Eye } from "lucide-react";
 import { usePaper } from "@/contexts/PaperContext";
+import { SECTION_TYPES } from "@/lib/constants";
 
 export const FormattedPreview = () => {
   const { sections, paperTitle, authors } = usePaper();
   const getAbstractContent = () => {
-    const abstractSection = sections.find(s => s.title.toLowerCase() === 'abstract');
+    const abstractSection = sections.find(s => s.title.toLowerCase() === SECTION_TYPES.ABSTRACT);
     return abstractSection?.generatedContent || '';
   };
 
@@ -40,7 +41,7 @@ export const FormattedPreview = () => {
           )}
 
           {sections
-            .filter(s => s.title.toLowerCase() !== 'abstract')
+            .filter(s => s.title.toLowerCase() !== SECTION_TYPES.ABSTRACT)
             .map((section, index) => (
             <div key={section.id} className="mb-6">
               <h2 className="text-lg font-bold mb-3 text-academic-text">

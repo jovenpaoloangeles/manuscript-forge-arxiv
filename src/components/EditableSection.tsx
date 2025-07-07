@@ -7,6 +7,7 @@ import { TextRewriteDialog } from "./TextRewriteDialog";
 import { VersionHistoryDialog } from "./VersionHistoryDialog";
 import { useEditableSection } from "@/hooks/useEditableSection";
 import { usePaper } from "@/contexts/PaperContext";
+import { SECTION_TYPES } from "@/lib/constants";
 
 interface EditableSectionProps {
   content: string;
@@ -34,7 +35,7 @@ export const EditableSection = ({
   const { paperTitle, sections } = usePaper();
   
   // Get abstract content for passing to dialogs
-  const abstractSection = sections.find(s => s.title.toLowerCase() === 'abstract');
+  const abstractSection = sections.find(s => s.title.toLowerCase() === SECTION_TYPES.ABSTRACT);
   const abstract = abstractSection?.generatedContent;
   const [showPreview, setShowPreview] = useState(false);
   const [showCritique, setShowCritique] = useState(false);

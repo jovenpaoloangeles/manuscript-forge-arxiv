@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import { PaperSection } from "@/components/PaperStructure";
 import { useToast } from "@/hooks/use-toast";
+import { STORAGE_KEYS, SESSION_CONFIG, TOAST_MESSAGES } from "@/lib/constants";
 
 export interface SessionData {
   id: string;
@@ -19,7 +20,7 @@ export const useSessionManager = () => {
   // Load sessions from localStorage on mount
   const loadSessionsFromStorage = useCallback(() => {
     try {
-      const stored = localStorage.getItem('academic-paper-sessions');
+      const stored = localStorage.getItem(STORAGE_KEYS.ACADEMIC_PAPER_SESSIONS);
       if (stored) {
         const parsedSessions = JSON.parse(stored);
         setSessions(parsedSessions);
@@ -34,7 +35,7 @@ export const useSessionManager = () => {
   // Save sessions to localStorage
   const saveSessionsToStorage = useCallback((sessionsToSave: SessionData[]) => {
     try {
-      localStorage.setItem('academic-paper-sessions', JSON.stringify(sessionsToSave));
+      localStorage.setItem(STORAGE_KEYS.ACADEMIC_PAPER_SESSIONS, JSON.stringify(sessionsToSave));
     } catch (error) {
       console.error('Failed to save sessions:', error);
     }
@@ -49,7 +50,7 @@ export const useSessionManager = () => {
     sessionName?: string
   ) => {
     const newSession: SessionData = {
-      id: `session-${Date.now()}`,
+      id: `${SESSION_CONFIG.ID_PREFIX}${Date.now()}`,
       name: sessionName || `Session ${new Date().toLocaleString()}`,
       timestamp: Date.now(),
       paperTitle,
@@ -63,8 +64,8 @@ export const useSessionManager = () => {
     saveSessionsToStorage(updatedSessions);
 
     toast({
-      title: "Session saved",
-      description: `Session "${newSession.name}" has been saved successfully.`,
+      title: TOAST_MESSAGES.SESSION_SAVED.title,
+      description: TOAST_MESSAGES.SESSION_SAVED.description.replace("{name}", newSession.name),
     });
 
     return newSession.id;
@@ -75,8 +76,8 @@ export const useSessionManager = () => {
     const session = sessions.find(s => s.id === sessionId);
     if (session) {
       toast({
-        title: "Session loaded",
-        description: `Session "${session.name}" has been loaded.`,
+        title: TOAST_MESSAGES.SESSION_LOADED.title,
+        description: TOAST_MESSAGES.SESSION_LOADED.description.replace("{name}", session.name),
       });
       return session;
     }
@@ -90,8 +91,8 @@ export const useSessionManager = () => {
     saveSessionsToStorage(updatedSessions);
 
     toast({
-      title: "Session deleted",
-      description: "Session has been deleted successfully.",
+      title: TOAST_MESSAGES.SESSION_DELETED.title,
+      description: TOAST_MESSAGES.SESSION_DELETED.description,
     });
   }, [sessions, saveSessionsToStorage, toast]);
 

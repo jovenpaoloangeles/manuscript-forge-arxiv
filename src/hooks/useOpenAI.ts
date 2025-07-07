@@ -9,6 +9,7 @@ import {
   suggestTitles as suggestPaperTitles,
   rewriteText as rewriteTextContent
 } from "@/lib/openai/generators";
+import { TOAST_MESSAGES, DEFAULT_MESSAGES, SECTION_TYPES } from "@/lib/constants";
 
 export const useOpenAI = () => {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -18,8 +19,8 @@ export const useOpenAI = () => {
   const validateApiKey = () => {
     if (!openaiApiKey) {
       toast({
-        title: "API key required",
-        description: "Please enter your OpenAI API key to generate content.",
+        title: TOAST_MESSAGES.API_KEY_REQUIRED.title,
+        description: TOAST_MESSAGES.API_KEY_REQUIRED.description,
         variant: "destructive",
       });
       throw new Error("API key required");
@@ -29,8 +30,8 @@ export const useOpenAI = () => {
   const handleGenerationError = (error: any, operation: string) => {
     console.error(`OpenAI API Error (${operation}):`, error);
     toast({
-      title: "Generation failed",
-      description: `Failed to ${operation}. Please check your API key and try again.`,
+      title: TOAST_MESSAGES.GENERATION_FAILED.title,
+      description: TOAST_MESSAGES.GENERATION_FAILED.description.replace("{operation}", operation),
       variant: "destructive",
     });
     throw error;
@@ -44,7 +45,7 @@ export const useOpenAI = () => {
       let generatedContent;
       
       // Special handling for Abstract section
-      if (section.title.toLowerCase() === 'abstract') {
+      if (section.title.toLowerCase() === SECTION_TYPES.ABSTRACT) {
         const fullPaperContent = getFullPaperContentForContext();
         generatedContent = await generatePaperAbstract(paperTitle, fullPaperContent, openaiApiKey);
       } else {
@@ -52,8 +53,8 @@ export const useOpenAI = () => {
       }
       
       toast({
-        title: "Content generated",
-        description: `Generated academic content for ${section.title}`,
+        title: TOAST_MESSAGES.CONTENT_GENERATED.title,
+        description: TOAST_MESSAGES.CONTENT_GENERATED.description.replace("{sectionTitle}", section.title),
       });
 
       return generatedContent;
@@ -79,8 +80,8 @@ export const useOpenAI = () => {
       );
       
       toast({
-        title: "Caption generated",
-        description: "Figure caption has been generated successfully.",
+        title: TOAST_MESSAGES.CAPTION_GENERATED.title,
+        description: TOAST_MESSAGES.CAPTION_GENERATED.description,
       });
 
       return generatedCaption;
@@ -100,8 +101,8 @@ export const useOpenAI = () => {
       const generatedAbstract = await generatePaperAbstract(paperTitle, fullPaperContent, openaiApiKey);
       
       toast({
-        title: "Abstract generated",
-        description: "Abstract has been generated based on the full paper content.",
+        title: TOAST_MESSAGES.ABSTRACT_GENERATED.title,
+        description: TOAST_MESSAGES.ABSTRACT_GENERATED.description,
       });
 
       return generatedAbstract;
@@ -121,8 +122,8 @@ export const useOpenAI = () => {
       const titles = await suggestPaperTitles(paperTitle, abstract, fullPaperContent, openaiApiKey);
       
       toast({
-        title: "Titles suggested",
-        description: `Generated ${titles.length} alternative titles.`,
+        title: TOAST_MESSAGES.TITLES_SUGGESTED.title,
+        description: TOAST_MESSAGES.TITLES_SUGGESTED.description.replace("{count}", titles.length.toString()),
       });
 
       return titles;
@@ -156,7 +157,7 @@ export const useOpenAI = () => {
   const getFullPaperContentForContext = (): string => {
     // This would need to be passed from the component or stored in context
     // For now, return a default message
-    return "No content available yet.";
+    return DEFAULT_MESSAGES.NO_CONTENT_AVAILABLE;
   };
 
   return {

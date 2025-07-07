@@ -8,6 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Save, FolderOpen, Trash2, Calendar } from "lucide-react";
 import { useSessionManager, SessionData } from "@/hooks/useSessionManager";
 import { PaperSection } from "./PaperStructure";
+import { SECTION_TYPES } from "@/lib/constants";
 
 interface SessionManagerProps {
   paperTitle: string;
@@ -33,7 +34,7 @@ export const SessionManager = ({
 
   const handleSaveSession = () => {
     const name = sessionName.trim() || `Session ${new Date().toLocaleString()}`;
-    const abstractSection = sections.find(s => s.title.toLowerCase() === 'abstract');
+    const abstractSection = sections.find(s => s.title.toLowerCase() === SECTION_TYPES.ABSTRACT);
     const abstractContent = abstractSection?.generatedContent || '';
     saveSession(paperTitle, authors, abstractContent, sections, name);
     setSessionName("");

@@ -10,6 +10,7 @@ import { BulletPointEditor } from "./BulletPointEditor";
 import { SectionFigureEditor } from "./SectionFigureEditor";
 import { PaperSection, SectionFigure } from "./PaperStructure";
 import { usePaper } from "@/contexts/PaperContext";
+import { SECTION_TYPES } from "@/lib/constants";
 
 interface SectionEditorProps {
   section: PaperSection;
@@ -31,7 +32,7 @@ export const SectionEditor = ({
   const { paperTitle, sections } = usePaper();
   
   // Get abstract content for passing to EditableSection
-  const abstractSection = sections.find(s => s.title.toLowerCase() === 'abstract');
+  const abstractSection = sections.find(s => s.title.toLowerCase() === SECTION_TYPES.ABSTRACT);
   const abstract = abstractSection?.generatedContent;
   const [editingTitle, setEditingTitle] = useState(false);
 
