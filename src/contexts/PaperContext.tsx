@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { PaperSection } from '@/components/PaperStructure';
 import { STORAGE_KEYS } from '@/lib/constants';
+import { Citation } from '@/components/CitationManager';
 
 interface PaperContextType {
   paperTitle: string;
@@ -11,6 +12,8 @@ interface PaperContextType {
   setSections: (sections: PaperSection[] | ((prev: PaperSection[]) => PaperSection[])) => void;
   openaiApiKey: string;
   setOpenaiApiKey: (key: string) => void;
+  citations: Citation[];
+  setCitations: (citations: Citation[]) => void;
 }
 
 const PaperContext = createContext<PaperContextType | undefined>(undefined);
@@ -24,6 +27,7 @@ export const PaperProvider = ({ children }: PaperProviderProps) => {
   const [authors, setAuthors] = useState("");
   const [sections, setSections] = useState<PaperSection[]>([]);
   const [openaiApiKey, setOpenaiApiKey] = useState("");
+  const [citations, setCitations] = useState<Citation[]>([]);
 
   // Load API key from localStorage on mount
   useEffect(() => {
@@ -49,6 +53,8 @@ export const PaperProvider = ({ children }: PaperProviderProps) => {
     setSections,
     openaiApiKey,
     setOpenaiApiKey,
+    citations,
+    setCitations,
   };
 
   return (
