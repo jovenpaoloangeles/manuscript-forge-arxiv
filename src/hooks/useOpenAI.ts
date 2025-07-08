@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { useApiKey } from "./useApiKey";
+import { usePaper } from "@/contexts/PaperContext";
 import { PaperSection } from "@/components/PaperStructure";
 import { 
   generateSectionContent as generateSection,
@@ -14,7 +14,7 @@ import { TOAST_MESSAGES, DEFAULT_MESSAGES, SECTION_TYPES } from "@/lib/constants
 export const useOpenAI = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
-  const { openaiApiKey, setOpenaiApiKey } = useApiKey();
+  const { openaiApiKey, setOpenaiApiKey } = usePaper();
 
   const validateApiKey = () => {
     if (!openaiApiKey) {
