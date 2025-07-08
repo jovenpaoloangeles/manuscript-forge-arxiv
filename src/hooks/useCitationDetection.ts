@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useCallback } from "react";
 import { PaperSection } from "@/components/PaperStructure";
 
 interface UseCitationDetectionProps {
@@ -7,13 +7,6 @@ interface UseCitationDetectionProps {
 }
 
 export const useCitationDetection = ({ sections, setSections }: UseCitationDetectionProps) => {
-  // Check for citations on mount and when sections change
-  useEffect(() => {
-    if (sections.length > 0) {
-      setTimeout(() => ensureReferencesSection(), 500);
-    }
-  }, [sections.length]);
-
   // Function to detect citation placeholders in content
   const hasCitationPlaceholders = () => {
     return sections.some(section => 
@@ -47,7 +40,7 @@ export const useCitationDetection = ({ sections, setSections }: UseCitationDetec
   };
 
   // Automatically add References section when citations are detected
-  const ensureReferencesSection = (sectionsToCheck = sections) => {
+  const ensureReferencesSection = useCallback((sectionsToCheck = sections) => {
     const hasReferences = sectionsToCheck.some(s => s.title.toLowerCase().includes('reference'));
     const hasCitations = sectionsToCheck.some(section => 
       section.generatedContent && section.generatedContent.includes('[CITE:')
@@ -68,7 +61,14 @@ export const useCitationDetection = ({ sections, setSections }: UseCitationDetec
       setSections(prev => [...prev, referencesSection]);
       console.log('Added References section with generated content');
     }
-  };
+  }, [sections, setSections]);
+
+  // Check for citations on mount and when sections change
+  useEffect(() => {
+    if (sections.length > 0) {
+      setTimeout(() => ensureReferencesSection(), 500);
+    }
+  }, [sections.length, ensureReferencesSection]);
 
   // Update References section when citations change
   const updateReferencesSection = () => {

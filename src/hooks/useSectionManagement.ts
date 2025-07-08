@@ -119,7 +119,7 @@ export const useSectionManagement = ({
     );
   };
 
-  const handleSuggestTitles = async () => {
+  const handleSuggestTitles = async (): Promise<string[]> => {
     try {
       const abstractSection = sections.find(s => s.title.toLowerCase() === SECTION_TYPES.ABSTRACT);
       const abstractContent = abstractSection?.generatedContent || '';
@@ -132,6 +132,7 @@ export const useSectionManagement = ({
       return titles;
     } catch (error) {
       // Error handled in hook
+      return [];
     }
   };
 

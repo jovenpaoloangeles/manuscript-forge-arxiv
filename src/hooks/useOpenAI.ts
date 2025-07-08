@@ -27,7 +27,7 @@ export const useOpenAI = () => {
     }
   };
 
-  const handleGenerationError = (error: any, operation: string) => {
+  const handleGenerationError = (error: unknown, operation: string) => {
     console.error(`OpenAI API Error (${operation}):`, error);
     toast({
       title: TOAST_MESSAGES.GENERATION_FAILED.title,
