@@ -7,7 +7,9 @@ import {
   generateCaption as generateFigureCaption,
   generateAbstract as generatePaperAbstract,
   suggestTitles as suggestPaperTitles,
-  rewriteText as rewriteTextContent
+  rewriteText as rewriteTextContent,
+  analyzeFullPaper,
+  FullPaperAnalysisResponse
 } from "@/lib/openai/generators";
 import { TOAST_MESSAGES, DEFAULT_MESSAGES, SECTION_TYPES } from "@/lib/constants";
 
@@ -153,6 +155,27 @@ export const useOpenAI = () => {
     }
   };
 
+  const fullPaperAnalysis = async (paperTitle: string, fullPaperContent: string): Promise<FullPaperAnalysisResponse> => {
+    validateApiKey();
+    setIsGenerating(true);
+    
+    try {
+      const analysis = await analyzeFullPaper(paperTitle, fullPaperContent, openaiApiKey);
+      
+      toast({
+        title: "Full Paper Analysis Complete",
+        description: "Comprehensive review has been generated with detailed insights.",
+      });
+
+      return analysis;
+    } catch (error) {
+      handleGenerationError(error, "analyze full paper");
+      throw error;
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   // Helper function to get full paper content for context
   const getFullPaperContentForContext = (): string => {
     // This would need to be passed from the component or stored in context
@@ -168,6 +191,7 @@ export const useOpenAI = () => {
     generateCaption,
     generateAbstract,
     suggestTitles,
-    rewriteText
+    rewriteText,
+    fullPaperAnalysis
   };
 };

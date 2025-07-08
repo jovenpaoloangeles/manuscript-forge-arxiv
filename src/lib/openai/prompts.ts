@@ -88,3 +88,21 @@ export const createRewritePrompt = (selectedText: string, sectionTitle: string, 
 
   return rewritePrompt;
 };
+
+export const createFullPaperAnalysisPrompt = (paperTitle: string, fullPaperContent: string): string => {
+  return `You are an expert academic peer reviewer for a top-tier journal. Analyze the following academic paper manuscript.
+
+Title: ${paperTitle || DEFAULT_MESSAGES.PAPER_TITLE_PLACEHOLDER}
+
+Full paper content:
+${fullPaperContent}
+
+Provide your feedback in a structured JSON format. The root object should have the following keys: "overallScore" (1-10), "argumentStrength", "flowAndCohesion", and "terminologyConsistency".
+
+- For "argumentStrength": Provide feedback on how well the paper's central thesis is introduced, supported by evidence, and concluded. Note any logical gaps.
+- For "flowAndCohesion": Analyze the transitions between major sections (e.g., from Introduction to Methodology). Are they smooth or abrupt? Are the sections well-linked?
+- For "terminologyConsistency": Identify up to 5 key technical terms used in the paper. For each term, state whether it was used consistently. If not, provide examples of inconsistent usage.
+- For each key, provide a "score" (1-10), "feedback" (a summary paragraph), "strengths" (an array of strings), and "suggestions" (an array of strings).
+
+Return only valid JSON without any markdown formatting or code blocks.`;
+};

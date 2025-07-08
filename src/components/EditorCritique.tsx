@@ -3,8 +3,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Brain, MessageSquare, Target, Zap, AlertCircle, CheckCircle, Lightbulb } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useOpenAI } from "@/hooks/useOpenAI";
+import { FullPaperAnalysisResponse } from "@/lib/openai/generators";
+import { ArgumentStrengthReport } from "./ArgumentStrengthReport";
+import { FlowAnalysisReport } from "./FlowAnalysisReport";
+import { TerminologyReport } from "./TerminologyReport";
 
 export interface CritiqueResponse {
   id: string;
@@ -26,10 +32,15 @@ interface EditorCritiqueProps {
 
 export const EditorCritique = ({ content, paperTitle, abstract, sectionTitle, sectionId }: EditorCritiqueProps) => {
   const [critiques, setCritiques] = useState<CritiqueResponse[]>([]);
+  const [fullPaperAnalysis, setFullPaperAnalysis] = useState<FullPaperAnalysisResponse | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analyzeType, setAnalyzeType] = useState<'full' | 'section'>('section');
   const [customPrompt, setCustomPrompt] = useState("");
   const { toast } = useToast();
+  const { fullPaperAnalysis: runFullPaperAnalysis, isGenerating } = useOpenAI();
+
+  // Determine if this is a full paper analysis based on content length and presence of multiple sections
+  const isFullPaper = content.length > 2000 || (content.includes('# ') && content.split('# ').length > 3);
 
   const runCritique = async (type: 'full' | 'section' | 'custom' = analyzeType) => {
     if (!content.trim() && type !== 'full') {
@@ -44,16 +55,20 @@ export const EditorCritique = ({ content, paperTitle, abstract, sectionTitle, se
     setIsAnalyzing(true);
     
     try {
-      // Simulate LLM critique
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      
-      const newCritique = generateMockCritique(type, content, sectionTitle, customPrompt);
-      setCritiques([newCritique, ...critiques]);
+      if (type === 'full' && isFullPaper && paperTitle) {
+        // Use real OpenAI API for full paper analysis
+        const analysis = await runFullPaperAnalysis(paperTitle, content);
+        setFullPaperAnalysis(analysis);
+      } else {
+        // Use mock critique for section/custom analysis
+        const newCritique = generateMockCritique(type, content, sectionTitle, customPrompt);
+        setCritiques([newCritique, ...critiques]);
 
-      toast({
-        title: "Analysis complete",
-        description: "Editor critique has been generated.",
-      });
+        toast({
+          title: "Analysis complete",
+          description: "Editor critique has been generated.",
+        });
+      }
     } catch (error) {
       toast({
         title: "Analysis failed",
@@ -249,75 +264,109 @@ export const EditorCritique = ({ content, paperTitle, abstract, sectionTitle, se
           )}
         </div>
 
-        {/* Critique Results */}
-        <div className="space-y-4">
-          {critiques.length === 0 && !isAnalyzing && (
-            <div className="text-center py-8">
-              <Brain className="h-12 w-12 text-academic-muted mx-auto mb-4" />
-              <p className="text-academic-muted">No critiques generated yet. Choose an analysis type above to get started.</p>
+        {/* Full Paper Analysis Results */}
+        {fullPaperAnalysis && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-academic-text">Comprehensive Paper Analysis</h3>
+              <Badge className={`${getScoreColor(fullPaperAnalysis.overallScore)} font-bold text-lg px-3 py-1`}>
+                Overall: {fullPaperAnalysis.overallScore}/10
+              </Badge>
             </div>
-          )}
+            
+            <Tabs defaultValue="argument" className="space-y-4">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="argument">Argument Strength</TabsTrigger>
+                <TabsTrigger value="flow">Flow & Cohesion</TabsTrigger>
+                <TabsTrigger value="terminology">Terminology</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="argument">
+                <ArgumentStrengthReport data={fullPaperAnalysis.argumentStrength} />
+              </TabsContent>
+              
+              <TabsContent value="flow">
+                <FlowAnalysisReport data={fullPaperAnalysis.flowAndCohesion} />
+              </TabsContent>
+              
+              <TabsContent value="terminology">
+                <TerminologyReport data={fullPaperAnalysis.terminologyConsistency} />
+              </TabsContent>
+            </Tabs>
+          </div>
+        )}
 
-          {critiques.map((critique) => (
-            <div key={critique.id} className="border rounded-lg p-6 space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  {getCritiqueIcon(critique.type)}
+        {/* Section/Custom Critique Results */}
+        {!fullPaperAnalysis && (
+          <div className="space-y-4">
+            {critiques.length === 0 && !isAnalyzing && (
+              <div className="text-center py-8">
+                <Brain className="h-12 w-12 text-academic-muted mx-auto mb-4" />
+                <p className="text-academic-muted">No critiques generated yet. Choose an analysis type above to get started.</p>
+              </div>
+            )}
+
+            {critiques.map((critique) => (
+              <div key={critique.id} className="border rounded-lg p-6 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    {getCritiqueIcon(critique.type)}
+                    <div>
+                      <h4 className="font-semibold text-academic-text capitalize">
+                        {critique.type.replace('_', ' ')} Analysis
+                      </h4>
+                      <p className="text-sm text-academic-muted">
+                        {critique.timestamp.toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                  <Badge className={`${getScoreColor(critique.score)} font-bold`}>
+                    {critique.score}/10
+                  </Badge>
+                </div>
+
+                <div className="space-y-4">
                   <div>
-                    <h4 className="font-semibold text-academic-text capitalize">
-                      {critique.type.replace('_', ' ')} Analysis
-                    </h4>
-                    <p className="text-sm text-academic-muted">
-                      {critique.timestamp.toLocaleString()}
+                    <h5 className="font-medium text-academic-text mb-2">Overall Feedback</h5>
+                    <p className="text-academic-text bg-academic-light p-3 rounded-lg">
+                      {critique.feedback}
                     </p>
                   </div>
-                </div>
-                <Badge className={`${getScoreColor(critique.score)} font-bold`}>
-                  {critique.score}/10
-                </Badge>
-              </div>
 
-              <div className="space-y-4">
-                <div>
-                  <h5 className="font-medium text-academic-text mb-2">Overall Feedback</h5>
-                  <p className="text-academic-text bg-academic-light p-3 rounded-lg">
-                    {critique.feedback}
-                  </p>
-                </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <h5 className="font-medium text-academic-text mb-2 flex items-center gap-2">
+                        <AlertCircle className="h-4 w-4 text-yellow-600" />
+                        Suggestions for Improvement
+                      </h5>
+                      <ul className="space-y-2">
+                        {critique.suggestions.map((suggestion, idx) => (
+                          <li key={idx} className="text-sm text-academic-text bg-yellow-50 p-2 rounded border-l-2 border-yellow-200">
+                            {suggestion}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <h5 className="font-medium text-academic-text mb-2 flex items-center gap-2">
-                      <AlertCircle className="h-4 w-4 text-yellow-600" />
-                      Suggestions for Improvement
-                    </h5>
-                    <ul className="space-y-2">
-                      {critique.suggestions.map((suggestion, idx) => (
-                        <li key={idx} className="text-sm text-academic-text bg-yellow-50 p-2 rounded border-l-2 border-yellow-200">
-                          {suggestion}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  <div>
-                    <h5 className="font-medium text-academic-text mb-2 flex items-center gap-2">
-                      <CheckCircle className="h-4 w-4 text-green-600" />
-                      Identified Strengths
-                    </h5>
-                    <ul className="space-y-2">
-                      {critique.strengths.map((strength, idx) => (
-                        <li key={idx} className="text-sm text-academic-text bg-green-50 p-2 rounded border-l-2 border-green-200">
-                          {strength}
-                        </li>
-                      ))}
-                    </ul>
+                    <div>
+                      <h5 className="font-medium text-academic-text mb-2 flex items-center gap-2">
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        Identified Strengths
+                      </h5>
+                      <ul className="space-y-2">
+                        {critique.strengths.map((strength, idx) => (
+                          <li key={idx} className="text-sm text-academic-text bg-green-50 p-2 rounded border-l-2 border-green-200">
+                            {strength}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </CardContent>
     </Card>
   );

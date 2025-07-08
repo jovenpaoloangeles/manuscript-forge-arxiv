@@ -4,7 +4,8 @@ import {
   createCaptionPrompt, 
   createAbstractPrompt, 
   createTitleSuggestionPrompt, 
-  createRewritePrompt 
+  createRewritePrompt,
+  createFullPaperAnalysisPrompt
 } from "./prompts";
 import { PaperSection } from "@/components/PaperStructure";
 import { OPENAI_CONFIG } from "@/lib/constants";
@@ -14,7 +15,8 @@ const SYSTEM_MESSAGES = {
   captionGeneration: "You are an expert academic writer. Generate brief, professional figure captions suitable for academic publications.",
   abstractGeneration: "You are an expert academic writer. Generate comprehensive, well-structured abstracts for research papers that accurately summarize the entire work.",
   titleSuggestion: "You are an expert academic writer. Generate clear, descriptive, and academically appropriate titles for research papers.",
-  textRewriting: "You are an expert academic editor. Rewrite the provided text to improve clarity, flow, and academic quality while maintaining the original meaning and technical accuracy. Use citation placeholders in the format [CITE: Short Reason for Citation] only when truly necessary - avoid citing common knowledge."
+  textRewriting: "You are an expert academic editor. Rewrite the provided text to improve clarity, flow, and academic quality while maintaining the original meaning and technical accuracy. Use citation placeholders in the format [CITE: Short Reason for Citation] only when truly necessary - avoid citing common knowledge.",
+  fullPaperAnalysis: "You are an expert academic peer reviewer for a top-tier journal. Analyze the provided academic paper comprehensively and return structured feedback in valid JSON format without any markdown formatting."
 };
 
 export const generateSectionContent = async (
@@ -159,4 +161,60 @@ export const rewriteText = async (
   });
 
   return completion.choices[0]?.message?.content || selectedText;
+};
+
+export interface FullPaperAnalysisResponse {
+  overallScore: number;
+  argumentStrength: {
+    score: number;
+    feedback: string;
+    strengths: string[];
+    suggestions: string[];
+  };
+  flowAndCohesion: {
+    score: number;
+    feedback: string;
+    strengths: string[];
+    suggestions: string[];
+  };
+  terminologyConsistency: {
+    score: number;
+    feedback: string;
+    strengths: string[];
+    suggestions: string[];
+  };
+}
+
+export const analyzeFullPaper = async (
+  paperTitle: string,
+  fullPaperContent: string,
+  apiKey: string
+): Promise<FullPaperAnalysisResponse> => {
+  const openai = createOpenAIClient(apiKey);
+  const prompt = createFullPaperAnalysisPrompt(paperTitle, fullPaperContent);
+
+  const completion = await openai.chat.completions.create({
+    model: OPENAI_CONFIG.MODEL,
+    messages: [
+      {
+        role: "system",
+        content: SYSTEM_MESSAGES.fullPaperAnalysis
+      },
+      {
+        role: "user",
+        content: prompt
+      }
+    ],
+    max_tokens: OPENAI_CONFIG.MAX_TOKENS.SECTION_CONTENT,
+    temperature: OPENAI_CONFIG.TEMPERATURE.DEFAULT
+  });
+
+  const response = completion.choices[0]?.message?.content || "";
+  
+  try {
+    return JSON.parse(response);
+  } catch (error) {
+    console.error("Failed to parse full paper analysis response:", error);
+    throw new Error("Invalid JSON response from AI analysis");
+  }
 };
