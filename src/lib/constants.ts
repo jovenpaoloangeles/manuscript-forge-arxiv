@@ -3,23 +3,32 @@
 // ============================================
 export const STORAGE_KEYS = {
   OPENAI_API_KEY: "openai-api-key",
+  OPENAI_MODEL: "openai-model",
   ACADEMIC_PAPER_SESSIONS: "academic-paper-sessions",
 } as const;
 
 // ============================================
 // OpenAI Configuration
 // ============================================
+export const AVAILABLE_MODELS = [
+  { id: "gpt-4o", name: "GPT-4o", description: "Fast, intelligent, flexible GPT model" },
+  { id: "gpt-4.1-2025-04-14", name: "GPT-4.1", description: "Long Context, Better for whole paper review" },
+  { id: "o3-pro-2025-06-10", name: "O3 Pro", description: "More compute o3 for better responses" },
+  { id: "o3-2025-04-16", name: "O3", description: "Most powerful reasoning model" },
+  { id: "gpt-4o-mini", name: "GPT-4o Mini", description: "Faster and more cost-effective" }
+] as const;
+
 export const OPENAI_CONFIG = {
-  MODEL: "gpt-4.1-2025-04-14",
+  DEFAULT_MODEL: "gpt-4o",
   TEMPERATURE: {
-    DEFAULT: 0.7,
+    DEFAULT: 0.4,
     TITLE_SUGGESTION: 0.8,
   },
   MAX_TOKENS: {
-    SECTION_CONTENT: 1000,
+    SECTION_CONTENT: 5000,
     CAPTION: 150,
     ABSTRACT: 400,
-    TITLE_SUGGESTION: 300,
+    TITLE_SUGGESTION: 200,
     TEXT_REWRITE: 500,
   },
 } as const;

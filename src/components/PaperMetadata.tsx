@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Settings, Key, Lightbulb, Copy } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { usePaper } from "@/contexts/PaperContext";
+import { ModelSelector } from "./ModelSelector";
 
 interface PaperMetadataProps {
   onSuggestTitles?: () => Promise<string[]>;
@@ -131,7 +132,7 @@ export const PaperMetadata = ({
             />
           </div>
         </div>
-        <div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <div>
             <label className="text-sm font-medium text-academic-text mb-2 flex items-center gap-2">
               <Key className="h-4 w-4" />
@@ -147,6 +148,9 @@ export const PaperMetadata = ({
             <p className="text-xs text-academic-muted mt-1">
               Required for AI text generation. Stored locally in your browser.
             </p>
+          </div>
+          <div>
+            <ModelSelector />
           </div>
         </div>
       </CardContent>
