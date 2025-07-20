@@ -8,6 +8,7 @@ import { GripVertical, Trash2 } from "lucide-react";
 import { EditableSection } from "./EditableSection";
 import { BulletPointEditor } from "./BulletPointEditor";
 import { SectionFigureEditor } from "./SectionFigureEditor";
+import { SubsectionEditor } from "./SubsectionEditor";
 import { PaperSection, SectionFigure } from "./PaperStructure";
 import { usePaper } from "@/contexts/PaperContext";
 import { SECTION_TYPES } from "@/lib/constants";
@@ -130,9 +131,39 @@ export const SectionEditor = ({
           />
         </div>
         
-        <BulletPointEditor
-          bulletPoints={section.bulletPoints}
-          onBulletPointsChange={(bulletPoints) => onSectionUpdate({ bulletPoints })}
+        <div>
+          <label className="text-sm font-medium text-academic-text mb-2 block">
+            Minimum Word Count
+          </label>
+          <Input
+            type="number"
+            value={section.minWordCount || ''}
+            onChange={(e) => onSectionUpdate({ minWordCount: e.target.value ? parseInt(e.target.value) : undefined })}
+            placeholder="e.g., 200"
+            min="0"
+            className="w-32"
+          />
+          <p className="text-xs text-academic-muted mt-1">
+            Specify minimum words for generated content (optional)
+          </p>
+        </div>
+        
+        <div>
+          <label className="text-sm font-medium text-academic-text mb-2 block">
+            Section-Level Key Points
+          </label>
+          <p className="text-xs text-academic-muted mb-2">
+            These points apply to the entire section (including all subsections)
+          </p>
+          <BulletPointEditor
+            bulletPoints={section.bulletPoints}
+            onBulletPointsChange={(bulletPoints) => onSectionUpdate({ bulletPoints })}
+          />
+        </div>
+        
+        <SubsectionEditor
+          subsections={section.subsections}
+          onSubsectionsChange={(subsections) => onSectionUpdate({ subsections })}
         />
         
         <SectionFigureEditor

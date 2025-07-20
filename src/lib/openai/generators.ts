@@ -10,6 +10,7 @@ import {
 import { PaperSection } from "@/components/PaperStructure";
 import { OPENAI_CONFIG } from "@/lib/constants";
 import { getSelectedModel } from "@/lib/utils";
+import { makeEnhancedOpenAICall } from "./responsesApiHelper";
 
 const SYSTEM_MESSAGES = {
   sectionGeneration: "You are a distinguished academic researcher with years of publication experience. Write in a natural, scholarly voice that demonstrates expertise without sounding artificial or formulaic. Use varied sentence structures, smooth transitions, and confident prose. ALWAYS include citation placeholders in the format [CITE: Short Reason for Citation] where appropriate for academic writing (e.g., prior work, methodologies, specific claims). Your writing should sound distinctly human - thoughtful, engaging, and authoritative.",
@@ -18,6 +19,19 @@ const SYSTEM_MESSAGES = {
   titleSuggestion: "You are an expert academic writer. Generate clear, descriptive, and academically appropriate titles for research papers.",
   textRewriting: "You are an expert academic editor. Rewrite the provided text to improve clarity, flow, and academic quality while maintaining the original meaning and technical accuracy. Use citation placeholders in the format [CITE: Short Reason for Citation] only when truly necessary - avoid citing common knowledge.",
   fullPaperAnalysis: "You are an expert academic peer reviewer for a top-tier journal. Analyze the provided academic paper comprehensively and return structured feedback in valid JSON format without any markdown formatting."
+};
+
+/**
+ * Helper function to make OpenAI API calls with enhanced support for o3 models via Responses API
+ * @param openai - OpenAI client instance
+ * @param params - API call parameters
+ * @returns Promise<any> - API response
+ */
+const makeOpenAICall = async (
+  openai: any,
+  params: any
+): Promise<any> => {
+  return await makeEnhancedOpenAICall(openai, params);
 };
 
 export const generateSectionContent = async (
@@ -29,7 +43,7 @@ export const generateSectionContent = async (
   const openai = createOpenAIClient(apiKey);
   const prompt = createSectionPrompt(section, paperTitle, abstract);
 
-  const completion = await openai.chat.completions.create({
+  const completion = await makeOpenAICall(openai, {
     model: getSelectedModel(),
     messages: [
       {
@@ -58,7 +72,7 @@ export const generateCaption = async (
   const openai = createOpenAIClient(apiKey);
   const prompt = createCaptionPrompt(figureDescription, sectionTitle, paperTitle, abstract);
 
-  const completion = await openai.chat.completions.create({
+  const completion = await makeOpenAICall(openai, {
     model: getSelectedModel(),
     messages: [
       {
@@ -85,7 +99,7 @@ export const generateAbstract = async (
   const openai = createOpenAIClient(apiKey);
   const prompt = createAbstractPrompt(paperTitle, fullPaperContent);
 
-  const completion = await openai.chat.completions.create({
+  const completion = await makeOpenAICall(openai, {
     model: getSelectedModel(),
     messages: [
       {
@@ -114,7 +128,7 @@ export const suggestTitles = async (
   const context = abstract || fullPaperContent || "No content available";
   const prompt = createTitleSuggestionPrompt(paperTitle, context);
 
-  const completion = await openai.chat.completions.create({
+  const completion = await makeOpenAICall(openai, {
     model: getSelectedModel(),
     messages: [
       {
@@ -145,7 +159,7 @@ export const rewriteText = async (
   const openai = createOpenAIClient(apiKey);
   const rewritePrompt = createRewritePrompt(selectedText, sectionTitle, paperTitle, abstract, prompt);
 
-  const completion = await openai.chat.completions.create({
+  const completion = await makeOpenAICall(openai, {
     model: getSelectedModel(),
     messages: [
       {
@@ -194,7 +208,7 @@ export const analyzeFullPaper = async (
   const openai = createOpenAIClient(apiKey);
   const prompt = createFullPaperAnalysisPrompt(paperTitle, fullPaperContent);
 
-  const completion = await openai.chat.completions.create({
+  const completion = await makeOpenAICall(openai, {
     model: getSelectedModel(),
     messages: [
       {

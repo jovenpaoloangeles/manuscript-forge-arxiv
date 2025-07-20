@@ -12,14 +12,24 @@ export interface SectionFigure {
   caption?: string;
 }
 
+export interface Subsection {
+  id: string;
+  title: string;
+  description?: string;
+  bulletPoints: string[];
+  minWordCount?: number;
+}
+
 export interface PaperSection {
   id: string;
   title: string;
   description: string;
-  bulletPoints: string[];
+  bulletPoints: string[]; // Section-level bullet points (apply to entire section)
+  subsections: Subsection[]; // Array of subsections
   figures: SectionFigure[];
   generatedContent?: string;
   isManuallyEdited?: boolean;
+  minWordCount?: number;
 }
 
 interface PaperStructureProps {
@@ -33,30 +43,35 @@ const defaultSections: Omit<PaperSection, 'id'>[] = [
     title: "Abstract",
     description: "Brief summary of the research, methodology, and key findings",
     bulletPoints: [],
+    subsections: [],
     figures: []
   },
   {
     title: "Introduction",
     description: "Background, motivation, and research objectives",
     bulletPoints: [],
+    subsections: [],
     figures: []
   },
   {
     title: "Methodology",
     description: "Research methods, experimental setup, and approach",
     bulletPoints: [],
+    subsections: [],
     figures: []
   },
   {
     title: "Results and Discussion",
     description: "Experimental results, findings, and their interpretation with implications",
     bulletPoints: [],
+    subsections: [],
     figures: []
   },
   {
     title: "Conclusion",
     description: "Summary of contributions and future work",
     bulletPoints: [],
+    subsections: [],
     figures: []
   }
 ];
@@ -85,6 +100,7 @@ export const PaperStructure = ({
       title: "New Section",
       description: "",
       bulletPoints: [],
+      subsections: [],
       figures: []
     };
     setSections([...sections, newSection]);

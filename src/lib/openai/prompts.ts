@@ -28,11 +28,42 @@ export const createSectionPrompt = (section: PaperSection, title: string, abstra
     prompt += ` Focus on: ${section.description}`;
   }
   
+  // Add section-level key points (apply to entire section)
   if (section.bulletPoints.length > 0) {
-    prompt += ` Key points to address:\n${section.bulletPoints.map(point => `• ${point}`).join('\n')}`;
+    prompt += ` Overall key points for the entire section:\n${section.bulletPoints.map(point => `• ${point}`).join('\n')}`;
   }
   
-  prompt += `\n\nWrite 2-3 well-developed paragraphs that sound like they were written by an experienced researcher. Use varied sentence structures, natural transitions, and INCLUDE AT LEAST 1-2 citation placeholders in the format ${CITATION_FORMAT.PLACEHOLDER.replace("{reason}", "Short Reason for Citation")} where appropriate (e.g., for prior work, methodologies, or specific claims). Avoid formulaic language and write with genuine scholarly voice.`;
+  // Add subsection structure and their key points
+  if (section.subsections && section.subsections.length > 0) {
+    prompt += ` This section should be organized into the following subsections:\n`;
+    section.subsections.forEach((subsection, index) => {
+      prompt += `\n${index + 1}. ${subsection.title}`;
+      if (subsection.description) {
+        prompt += ` - ${subsection.description}`;
+      }
+      if (subsection.bulletPoints.length > 0) {
+        prompt += `\n   Key points for this subsection:\n${subsection.bulletPoints.map(point => `   • ${point}`).join('\n')}`;
+      }
+      if (subsection.minWordCount) {
+        prompt += `\n   Minimum ${subsection.minWordCount} words for this subsection.`;
+      }
+    });
+    prompt += `\n`;
+  }
+  
+  // Add word count requirement if specified
+  const wordCountInstruction = section.minWordCount 
+    ? ` The content should be at least ${section.minWordCount} words.`
+    : '';
+    
+  prompt += `\n\nWrite this section as a seasoned academic researcher would. Your writing should be:
+- Natural and engaging, not formulaic or robotic
+- Appropriately detailed for the topic and context
+- Well-structured with smooth logical flow
+- Written in your own authentic scholarly voice
+- Include citations naturally where they support your points, using the format ${CITATION_FORMAT.PLACEHOLDER.replace("{reason}", "Brief reason")} when referencing prior work, methodologies, or specific claims
+
+Write as much or as little as needed to thoroughly cover the topic.${wordCountInstruction} Focus on substance and clarity rather than meeting arbitrary structural requirements.`;
   
   return prompt;
 };
